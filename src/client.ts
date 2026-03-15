@@ -5,10 +5,11 @@ import type {
   QredexCallOptions,
   QredexClientOptions,
 } from "./types";
-import { AuthManager } from "./internal/auth-manager";
 import { HttpClient } from "./internal/http-client";
+import { createTokenProvider, type TokenProvider } from "./internal/token-provider";
 import { Transport } from "./internal/transport";
 import { normalizeBaseUrl } from "./internal/utils";
+import { validateClientConfiguration } from "./internal/validation";
 import { CreatorsClient } from "./resources/creators";
 import { IntentsClient } from "./resources/intents";
 import { LinksClient } from "./resources/links";
@@ -16,17 +17,17 @@ import { OrdersClient } from "./resources/orders";
 import { RefundsClient } from "./resources/refunds";
 
 export class QredexAuthClient {
-  constructor(private readonly authManager: AuthManager) {}
+  constructor(private readonly tokenProvider: TokenProvider) {}
 
   async issueToken(
     request: IssueTokenRequest = {},
     options?: QredexCallOptions,
   ): Promise<OAuthTokenResponse> {
-    return this.authManager.issueToken(request, options);
+    return this.tokenProvider.issueToken(request, options);
   }
 
   async clearTokenCache(): Promise<void> {
-    return this.authManager.clearTokenCache();
+    return this.tokenProvider.clearTokenCache();
   }
 }
 
@@ -43,9 +44,7 @@ export class QredexClient {
   }
 
   private constructor(options: QredexClientOptions) {
-    if (!options.baseUrl) {
-      throw new ConfigurationError("QredexClient requires a baseUrl.");
-    }
+    validateClientConfiguration(options.baseUrl);
 
     if (!options.auth) {
       throw new ConfigurationError("QredexClient requires auth configuration.");
@@ -56,17 +55,19 @@ export class QredexClient {
       fetch: options.fetch ?? fetch,
       timeoutMs: options.timeoutMs ?? 10_000,
       logger: options.logger,
+      onDebug: options.onDebug,
       defaultHeaders: options.defaultHeaders,
       userAgentSuffix: options.userAgentSuffix,
     });
-    const authManager = new AuthManager({
+    const tokenProvider = createTokenProvider({
       auth: options.auth,
       transport,
       logger: options.logger,
+      onDebug: options.onDebug,
     });
-    const http = new HttpClient(transport, authManager);
+    const http = new HttpClient(transport, tokenProvider);
 
-    this.auth = new QredexAuthClient(authManager);
+    this.auth = new QredexAuthClient(tokenProvider);
     this.creators = new CreatorsClient(http);
     this.links = new LinksClient(http);
     this.intents = new IntentsClient(http);

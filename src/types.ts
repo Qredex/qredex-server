@@ -1,5 +1,29 @@
 export type MaybePromise<T> = T | Promise<T>;
 
+export type QredexDebugEventType =
+  | "request"
+  | "response"
+  | "response_error"
+  | "network_error"
+  | "auth_token_issued";
+
+export interface QredexDebugEvent {
+  type: QredexDebugEventType;
+  method?: string;
+  path?: string;
+  status?: number;
+  durationMs?: number;
+  timeoutMs?: number;
+  requestId?: string;
+  traceId?: string;
+  errorCode?: string;
+  message?: string;
+  retryAfterSeconds?: number;
+  scope?: string;
+  tokenType?: string;
+  expiresAt?: string;
+}
+
 export type FetchLike = (
   input: Request | URL | string,
   init?: RequestInit,
@@ -57,6 +81,10 @@ export interface QredexLogger {
   error?(message: string, meta?: Record<string, unknown>): void;
 }
 
+export type QredexDebugHook = (
+  event: QredexDebugEvent,
+) => MaybePromise<void>;
+
 export interface QredexRetryPolicy {
   maxAttempts?: number;
   baseDelayMs?: number;
@@ -97,6 +125,7 @@ export interface QredexClientOptions {
   timeoutMs?: number;
   fetch?: FetchLike;
   logger?: QredexLogger;
+  onDebug?: QredexDebugHook;
   defaultHeaders?: Record<string, string>;
   userAgentSuffix?: string;
 }

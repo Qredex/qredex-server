@@ -1,13 +1,13 @@
-import {
-  ApiError,
-  AuthenticationError,
-  AuthorizationError,
-  ConflictError,
-  NetworkError,
-  RateLimitError,
-  ValidationError,
-} from "../errors";
-import type { FetchLike, QredexCallOptions, QredexLogger } from "../types";
+import { NetworkError, isQredexError } from "../errors";
+import type {
+  FetchLike,
+  QredexCallOptions,
+  QredexDebugHook,
+  QredexLogger,
+} from "../types";
+import { createApiError } from "./api-error-factory";
+import { emitDebugEvent } from "./debug";
+import { buildRequestContext } from "./request-context";
 import {
   appendQuery,
   maybeParseJson,
@@ -43,6 +43,7 @@ interface TransportOptions {
   fetch: FetchLike;
   timeoutMs: number;
   logger?: QredexLogger;
+  onDebug?: QredexDebugHook;
   defaultHeaders?: Record<string, string>;
   userAgentSuffix?: string;
 }
@@ -52,6 +53,7 @@ export class Transport {
   private readonly fetchImplementation: FetchLike;
   private readonly timeoutMs: number;
   private readonly logger?: QredexLogger;
+  private readonly onDebug?: QredexDebugHook;
   private readonly defaultHeaders: Record<string, string>;
   private readonly userAgent: string;
 
@@ -60,6 +62,7 @@ export class Transport {
     this.fetchImplementation = options.fetch;
     this.timeoutMs = options.timeoutMs;
     this.logger = options.logger;
+    this.onDebug = options.onDebug;
     this.defaultHeaders = options.defaultHeaders ?? {};
     this.userAgent = options.userAgentSuffix
       ? `@qredex/sdk ${options.userAgentSuffix}`.trim()
@@ -69,6 +72,7 @@ export class Transport {
   async request<T>(request: TransportRequest): Promise<T> {
     const url = new URL(`${this.baseUrl}${request.path}`);
     appendQuery(url, request.query);
+    const context = buildRequestContext(this.timeoutMs, request.callOptions);
 
     const headers = new Headers(this.defaultHeaders);
     headers.set("accept", "application/json");
@@ -78,18 +82,16 @@ export class Transport {
       headers.set("user-agent", this.userAgent);
     }
 
-    if (request.callOptions?.requestId) {
-      headers.set("x-request-id", request.callOptions.requestId);
+    if (context.requestId) {
+      headers.set("x-request-id", context.requestId);
     }
 
-    if (request.callOptions?.traceId) {
-      headers.set("x-trace-id", request.callOptions.traceId);
+    if (context.traceId) {
+      headers.set("x-trace-id", context.traceId);
     }
 
-    if (request.callOptions?.headers) {
-      for (const [key, value] of Object.entries(request.callOptions.headers)) {
-        headers.set(key, value);
-      }
+    for (const [key, value] of Object.entries(context.headers)) {
+      headers.set(key, value);
     }
 
     if (request.headers) {
@@ -124,10 +126,18 @@ export class Transport {
       }
     }
 
-    const timeoutMs = request.callOptions?.timeoutMs ?? this.timeoutMs;
+    await emitDebugEvent(this.onDebug, this.logger, {
+      type: "request",
+      method: request.method,
+      path: request.path,
+      requestId: context.requestId,
+      timeoutMs: context.timeoutMs,
+      traceId: context.traceId,
+    });
+
     const controller = new AbortController();
-    const cleanupSignal = this.forwardAbort(request.callOptions?.signal, controller);
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const cleanupSignal = this.forwardAbort(context.signal, controller);
+    const timeout = setTimeout(() => controller.abort(), context.timeoutMs);
     const startedAt = Date.now();
 
     try {
@@ -153,20 +163,16 @@ export class Transport {
       ]);
 
       if (!response.ok) {
+        const retryAfterHeader = response.headers.get("retry-after");
+        const retryAfterSeconds = retryAfterHeader
+          ? Number.parseInt(retryAfterHeader, 10)
+          : undefined;
+        const errorCode = this.extractErrorCode(responseBody);
         const message =
           this.extractMessage(responseBody) ??
           (response.statusText ||
             DEFAULT_STATUS_MESSAGES[response.status] ||
             `Qredex API request failed with status ${response.status}`);
-        const errorCode = this.extractErrorCode(responseBody);
-        const details = {
-          status: response.status,
-          errorCode,
-          requestId,
-          traceId,
-          responseBody,
-          responseText: responseText || undefined,
-        };
 
         this.logger?.warn?.("qredex.response.error", {
           durationMs,
@@ -176,41 +182,45 @@ export class Transport {
           status: response.status,
           traceId,
         });
+        await emitDebugEvent(this.onDebug, this.logger, {
+          type: "response_error",
+          durationMs,
+          errorCode,
+          message,
+          method: request.method,
+          path: request.path,
+          requestId,
+          retryAfterSeconds: Number.isFinite(retryAfterSeconds)
+            ? retryAfterSeconds
+            : undefined,
+          status: response.status,
+          traceId,
+        });
 
-        if (response.status === 400) {
-          throw new ValidationError(message, details);
-        }
-
-        if (response.status === 401) {
-          throw new AuthenticationError(message, details);
-        }
-
-        if (response.status === 403) {
-          throw new AuthorizationError(message, details);
-        }
-
-        if (response.status === 409) {
-          throw new ConflictError(message, details);
-        }
-
-        if (response.status === 429) {
-          const retryAfterHeader = response.headers.get("retry-after");
-          const retryAfterSeconds = retryAfterHeader
-            ? Number.parseInt(retryAfterHeader, 10)
-            : undefined;
-
-          throw new RateLimitError(message, {
-            ...details,
-            retryAfterSeconds: Number.isFinite(retryAfterSeconds)
-              ? retryAfterSeconds
-              : undefined,
-          });
-        }
-
-        throw new ApiError(message, details);
+        throw createApiError({
+          status: response.status,
+          errorCode,
+          message,
+          requestId,
+          traceId,
+          responseBody,
+          responseText: responseText || undefined,
+          retryAfterSeconds: Number.isFinite(retryAfterSeconds)
+            ? retryAfterSeconds
+            : undefined,
+        });
       }
 
       this.logger?.info?.("qredex.response", {
+        durationMs,
+        method: request.method,
+        path: request.path,
+        requestId,
+        status: response.status,
+        traceId,
+      });
+      await emitDebugEvent(this.onDebug, this.logger, {
+        type: "response",
         durationMs,
         method: request.method,
         path: request.path,
@@ -225,25 +235,24 @@ export class Transport {
 
       return (responseBody ?? responseText) as T;
     } catch (error) {
-      if (
-        error instanceof ApiError ||
-        error instanceof ValidationError ||
-        error instanceof AuthenticationError ||
-        error instanceof AuthorizationError ||
-        error instanceof ConflictError ||
-        error instanceof RateLimitError
-      ) {
+      if (isQredexError(error)) {
         throw error;
       }
 
       const message =
-        controller.signal.aborted && !request.callOptions?.signal?.aborted
-          ? `Request timed out after ${timeoutMs}ms`
+        controller.signal.aborted && !context.signal?.aborted
+          ? `Request timed out after ${context.timeoutMs}ms`
           : error instanceof Error
             ? error.message
             : "Network request failed";
 
       this.logger?.error?.("qredex.network_error", {
+        method: request.method,
+        path: request.path,
+      });
+      await emitDebugEvent(this.onDebug, this.logger, {
+        type: "network_error",
+        message,
         method: request.method,
         path: request.path,
       });

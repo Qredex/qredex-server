@@ -22,6 +22,11 @@ export type IntegrityBand = "HIGH" | "MEDIUM" | "LOW" | "CRITICAL";
 export type ResolutionStatus = "ATTRIBUTED" | "UNATTRIBUTED" | "REJECTED";
 export type WindowStatus = "WITHIN" | "OUTSIDE" | "UNKNOWN";
 export type TokenIntegrity = "VALID" | "INVALID";
+export type OrderIngestionDecision =
+  | "INGESTED"
+  | "IDEMPOTENT"
+  | "REJECTED_SOURCE_POLICY"
+  | "REJECTED_CROSS_SOURCE_DUPLICATE";
 
 export interface ApiErrorResponse {
   error_code?: string;

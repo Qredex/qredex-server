@@ -1,11 +1,11 @@
 import type { QredexCallOptions } from "../types";
-import { AuthManager } from "./auth-manager";
 import { Transport, type TransportRequest } from "./transport";
+import type { TokenProvider } from "./token-provider";
 
 export class HttpClient {
   constructor(
     private readonly transport: Transport,
-    private readonly authManager: AuthManager,
+    private readonly tokenProvider: TokenProvider,
   ) {}
 
   async request<T>(
@@ -14,7 +14,7 @@ export class HttpClient {
       callOptions?: QredexCallOptions;
     },
   ): Promise<T> {
-    const authorization = await this.authManager.getAuthorizationHeader(
+    const authorization = await this.tokenProvider.getAuthorizationHeader(
       request.callOptions,
     );
 

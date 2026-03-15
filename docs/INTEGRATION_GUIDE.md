@@ -109,6 +109,7 @@ const refund = await client.refunds.recordRefund({
 - Reuse stable external order and refund IDs on retries.
 - Treat `INGESTED` and `IDEMPOTENT` as successful business acknowledgements when documented by Qredex policy.
 - Treat `409` outcomes as policy/conflict rejections, not transport failures.
+- Expect the SDK to reject obviously invalid request shapes locally before making a network call.
 - Never log `client_secret`, bearer tokens, IIT, or PIT in plaintext.
 - Keep store scoping correct on every write.
 

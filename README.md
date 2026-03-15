@@ -101,8 +101,21 @@ The SDK:
 
 - issues access tokens through `/api/v1/auth/token`
 - reuses cached tokens until they approach expiry
+- validates high-mistake request fields before sending them
 - never logs secrets or bearer tokens by default
-- supports custom token caches, logging hooks, timeout overrides, and explicit token issuance through `client.auth.issueToken()`
+- supports custom token caches, logging hooks, sanitized `onDebug` events, timeout overrides, and explicit token issuance through `client.auth.issueToken()`
+
+Example sanitized debug hook:
+
+```ts
+const client = QredexClient.init({
+  baseUrl,
+  auth: { clientId, clientSecret },
+  onDebug(event) {
+    console.log(event.type, event.method, event.path, event.status);
+  },
+});
+```
 
 ## Canonical Flow
 
@@ -115,6 +128,13 @@ The SDK:
 7. Record refunds later with stable external refund IDs.
 
 See [docs/INTEGRATION_GUIDE.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/INTEGRATION_GUIDE.md) for the full flow and [docs/ERRORS.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/ERRORS.md) for failure handling.
+
+## Testing
+
+- `npm test` runs unit tests with mocked transport
+- `npm run test:live` runs the opt-in live integration suite in [`tests/live.integration.test.ts`](/Users/bobai/Workspace/Qredex/qredex-node/tests/live.integration.test.ts)
+
+Live tests are skipped unless `QREDEX_LIVE_ENABLED=1` and the required `QREDEX_LIVE_*` environment variables are set.
 
 ## Examples
 

@@ -7,6 +7,11 @@ import type {
 } from "../models";
 import type { QredexCallOptions } from "../types";
 import { HttpClient } from "../internal/http-client";
+import {
+  validateCreateLinkRequest,
+  validateGetLinkRequest,
+  validateListLinksRequest,
+} from "../internal/validation";
 
 export class LinksClient {
   constructor(private readonly http: HttpClient) {}
@@ -15,6 +20,7 @@ export class LinksClient {
     request: CreateLinkRequest,
     options?: QredexCallOptions,
   ): Promise<LinkResponse> {
+    validateCreateLinkRequest(request);
     return this.http.request<LinkResponse>({
       method: "POST",
       path: "/api/v1/integrations/links",
@@ -27,6 +33,7 @@ export class LinksClient {
     request: GetLinkRequest,
     options?: QredexCallOptions,
   ): Promise<LinkResponse> {
+    validateGetLinkRequest(request);
     return this.http.request<LinkResponse>({
       method: "GET",
       path: `/api/v1/integrations/links/${request.link_id}`,
@@ -38,6 +45,7 @@ export class LinksClient {
     request: ListLinksRequest = {},
     options?: QredexCallOptions,
   ): Promise<LinkPageResponse> {
+    validateListLinksRequest(request);
     return this.http.request<LinkPageResponse>({
       method: "GET",
       path: "/api/v1/integrations/links",

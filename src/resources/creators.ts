@@ -7,6 +7,11 @@ import type {
 } from "../models";
 import type { QredexCallOptions } from "../types";
 import { HttpClient } from "../internal/http-client";
+import {
+  validateCreateCreatorRequest,
+  validateGetCreatorRequest,
+  validateListCreatorsRequest,
+} from "../internal/validation";
 
 export class CreatorsClient {
   constructor(private readonly http: HttpClient) {}
@@ -15,6 +20,7 @@ export class CreatorsClient {
     request: CreateCreatorRequest,
     options?: QredexCallOptions,
   ): Promise<CreatorResponse> {
+    validateCreateCreatorRequest(request);
     // Creator writes are part of the integrations contract in the auth/docs set,
     // even though the current OpenAPI file only documents GETs on this path.
     return this.http.request<CreatorResponse>({
@@ -29,6 +35,7 @@ export class CreatorsClient {
     request: GetCreatorRequest,
     options?: QredexCallOptions,
   ): Promise<CreatorResponse> {
+    validateGetCreatorRequest(request);
     return this.http.request<CreatorResponse>({
       method: "GET",
       path: `/api/v1/integrations/creators/${request.creator_id}`,
@@ -40,6 +47,7 @@ export class CreatorsClient {
     request: ListCreatorsRequest = {},
     options?: QredexCallOptions,
   ): Promise<CreatorPageResponse> {
+    validateListCreatorsRequest(request);
     return this.http.request<CreatorPageResponse>({
       method: "GET",
       path: "/api/v1/integrations/creators",
