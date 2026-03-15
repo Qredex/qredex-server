@@ -46,7 +46,7 @@ When a version bump lands on `main`:
    - verifies the checked-out commit is the tagged release commit
    - runs `npm run release:check`
    - publishes with npm Trusted Publishing
-   - creates the GitHub Release with generated notes
+   - creates the GitHub Release with generated notes through the GitHub CLI
 
 The publish workflow is rerunnable. If the version is already published on npm, it skips the npm publish step safely instead of failing the run.
 

@@ -127,7 +127,6 @@ export class Qredex {
 
     const eventBus = new QredexEventBus(options.logger, [
       ...(options.onEvent ? [options.onEvent] : []),
-      ...(options.onDebug ? [options.onDebug] : []),
     ]);
 
     const transport = new Transport({

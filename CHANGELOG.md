@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- remove `onDebug` from the public SDK surface and keep `onEvent` as the single observability hook
+- replace the deprecated JavaScript GitHub Release action with a GitHub CLI release step
+- add a shared-client example and production-default guidance for backend services
+
 ## 0.1.2
 
 Public SDK hardening release for `@qredex/server`.

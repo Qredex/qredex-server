@@ -73,7 +73,8 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.release.outputs.should_publish == 'true'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.release.outputs.tag }}
-          generate_release_notes: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "${{ steps.release.outputs.tag }}" >/dev/null 2>&1 || \
+          gh release create "${{ steps.release.outputs.tag }}" --generate-notes

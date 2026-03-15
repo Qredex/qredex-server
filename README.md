@@ -116,6 +116,16 @@ const qredex = Qredex.init({
 
 Use `QREDEX_ENVIRONMENT` only when you need `staging` or `development`. Most integrations can omit it and stay on the default `production` environment.
 
+## Production Defaults
+
+For most backend services, keep the SDK setup simple:
+
+- create one shared `Qredex` client per process or service
+- prefer `Qredex.bootstrap()` when your service already uses environment-based config
+- keep automatic retries limited to reads
+- pass store IDs, external order IDs, and refund IDs explicitly per request
+- use `onEvent` or `qredex.events` for sanitized observability
+
 ## Auth And Observability
 
 Normal auth is automatic. If you want to observe or preflight token issuance explicitly, do it on the same `qredex` instance:
@@ -157,8 +167,6 @@ const qredex = Qredex.init({
 ```
 
 Event hooks are best-effort and non-blocking. Keep them lightweight, but they will not delay SDK requests.
-
-`onDebug` is a deprecated alias for `onEvent`. Prefer `onEvent` for new integrations.
 
 Event types include:
 
@@ -259,6 +267,7 @@ try {
 - [get-order-details.ts](./examples/get-order-details.ts)
 - [record-paid-order.ts](./examples/record-paid-order.ts)
 - [record-refund.ts](./examples/record-refund.ts)
+- [shared-client.ts](./examples/shared-client.ts)
 
 ## Testing
 

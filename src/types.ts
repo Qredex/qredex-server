@@ -98,8 +98,6 @@ export type QredexEvent =
     };
 
 export type QredexEventType = QredexEvent["type"];
-export type QredexDebugEvent = QredexEvent;
-export type QredexDebugEventType = QredexEventType;
 
 export type FetchLike = (
   input: Request | URL | string,
@@ -161,8 +159,6 @@ export interface QredexLogger {
 export type QredexEventHook = (
   event: QredexEvent,
 ) => MaybePromise<void>;
-/** @deprecated Use QredexEventHook or the onEvent option instead. */
-export type QredexDebugHook = QredexEventHook;
 
 export interface QredexRetryPolicy {
   maxAttempts?: number;
@@ -205,8 +201,6 @@ export interface QredexOptions {
   fetch?: FetchLike;
   logger?: QredexLogger;
   onEvent?: QredexEventHook;
-  /** @deprecated Use onEvent instead. */
-  onDebug?: QredexDebugHook;
   readRetry?: QredexRetryPolicy;
   clock?: QredexClock;
   defaultHeaders?: Record<string, string>;

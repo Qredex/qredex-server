@@ -2,6 +2,8 @@
 
 These are practical ways teams commonly wire `qredex` into backend services.
 
+If you want one recommended starting point, use [`examples/shared-client.ts`](../examples/shared-client.ts) and keep a single shared `Qredex` instance per service process.
+
 ## Creator And Link Management Service
 
 Use this when a backend service is responsible for merchant onboarding, creator creation, and link provisioning.
