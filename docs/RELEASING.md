@@ -26,7 +26,7 @@
 - `production` is the default SDK environment.
 - `staging` resolves to `https://staging-api.qredex.com`.
 - `development` resolves to `http://localhost:8080`.
-- `baseUrl` should only be used as an advanced override for controlled testing.
+- `baseUrl` should only be used as an internal/testing override with non-production environments.
 - `prepublishOnly` runs `typecheck`, `test`, and `build` before publish.
 
 ## Live Test Expectation

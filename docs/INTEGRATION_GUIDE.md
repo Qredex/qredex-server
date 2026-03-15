@@ -39,7 +39,7 @@ Canonical host presets are built in:
 - `staging` -> `https://staging-api.qredex.com`
 - `development` -> `http://localhost:8080`
 
-Use `baseUrl` only as an advanced override for controlled testing.
+Use `baseUrl` only as an internal/testing override with `environment: "staging"` or `environment: "development"`. Production should always resolve from the built-in environment preset.
 
 ## 2. Creator Setup
 

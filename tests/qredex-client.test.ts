@@ -45,6 +45,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
+      environment: "development",
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client-123",
@@ -222,6 +223,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
+      environment: "development",
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -310,6 +312,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
+      environment: "development",
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -346,6 +349,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
+      environment: "development",
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "bad-client",
@@ -382,6 +386,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
+      environment: "development",
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -424,6 +429,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
+      environment: "development",
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -449,6 +455,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
+      environment: "development",
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -478,6 +485,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
+      environment: "development",
       baseUrl: "https://api.qredex.test",
       auth: {
         type: "access_token",
@@ -515,6 +523,20 @@ describe("Qredex", () => {
     await client.creators.list();
 
     expect(String(calls[0]!.input)).toBe("https://api.qredex.com/api/v1/integrations/creators");
+  });
+
+  it("rejects baseUrl overrides on the production path", () => {
+    expect(() =>
+      Qredex.init({
+        baseUrl: "https://api.qredex.test",
+        auth: {
+          type: "access_token",
+          accessToken: "prod-token",
+        },
+      }),
+    ).toThrowError(
+      "Qredex baseUrl overrides require environment to be 'staging' or 'development'.",
+    );
   });
 
   it("supports environment presets without requiring a baseUrl", async () => {
@@ -571,6 +593,7 @@ describe("Qredex", () => {
     const { calls, fetch } = createFetchMock([]);
 
     const client = Qredex.init({
+      environment: "development",
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -619,6 +642,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
+      environment: "development",
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",

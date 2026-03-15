@@ -132,7 +132,7 @@ const developmentClient = Qredex.init({
 });
 ```
 
-`baseUrl` still exists as an advanced override for controlled testing, but it should not be the normal integration path.
+`baseUrl` is an internal/testing override only. It is rejected on the default production path and should be used only with `environment: "staging"` or `environment: "development"`.
 
 ## Events And Observability
 
@@ -212,6 +212,7 @@ See [docs/INTEGRATION_GUIDE.md](./docs/INTEGRATION_GUIDE.md) for the full flow, 
 ## Testing
 
 - `npm test` runs unit tests with mocked transport
+- `npm test` also runs local mock-server integration tests over real HTTP
 - `npm run test:live` runs the opt-in live integration suite in `tests/live.integration.test.ts`
 
 Live tests are skipped unless `QREDEX_LIVE_ENABLED=1` and the required `QREDEX_LIVE_*` environment variables are set.
