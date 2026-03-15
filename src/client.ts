@@ -34,7 +34,7 @@ import { QredexEventBus } from "./internal/event-bus";
 import { HttpClient } from "./internal/http-client";
 import { createTokenProvider, type TokenProvider } from "./internal/token-provider";
 import { Transport } from "./internal/transport";
-import { resolveClientBaseUrl } from "./internal/validation";
+import { resolveClientBaseUrl, validateQredexOptions } from "./internal/validation";
 import { CreatorsClient } from "./resources/creators";
 import { IntentsClient } from "./resources/intents";
 import { LinksClient } from "./resources/links";
@@ -119,13 +119,11 @@ export class Qredex {
   }
 
   private constructor(options: QredexOptions) {
+    validateQredexOptions(options);
+
     const clock: QredexClock = options.clock ?? {
       now: () => Date.now(),
     };
-
-    if (!options.auth) {
-      throw new ConfigurationError("Qredex requires auth configuration.");
-    }
 
     const eventBus = new QredexEventBus(options.logger, [
       ...(options.onEvent ? [options.onEvent] : []),

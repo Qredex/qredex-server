@@ -161,6 +161,7 @@ export interface QredexLogger {
 export type QredexEventHook = (
   event: QredexEvent,
 ) => MaybePromise<void>;
+/** @deprecated Use QredexEventHook or the onEvent option instead. */
 export type QredexDebugHook = QredexEventHook;
 
 export interface QredexRetryPolicy {
@@ -204,6 +205,7 @@ export interface QredexOptions {
   fetch?: FetchLike;
   logger?: QredexLogger;
   onEvent?: QredexEventHook;
+  /** @deprecated Use onEvent instead. */
   onDebug?: QredexDebugHook;
   readRetry?: QredexRetryPolicy;
   clock?: QredexClock;

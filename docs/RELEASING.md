@@ -16,6 +16,7 @@ The automated release flow tags and publishes only when those version files are 
    - `npm run test`
    - `npm run build`
    - `npm run release:check`
+   - `npm run smoke:package`
 4. Run the live integration suite against staging when credentials are available:
    - start from [`.env.live.example`](../.env.live.example)
    - `QREDEX_LIVE_ENABLED=1`
@@ -86,7 +87,7 @@ The workflow will:
 
 ## Notes
 
-- `npm run release:check` is the pre-publish verification path used by automation.
+- `npm run release:check` is the pre-publish verification path used by automation and includes the package smoke check.
 - `npm test` and `npm run release:check` intentionally exclude the live integration suite.
 - `npm run publish:npm` is only for the GitHub Actions release workflow.
 - `prepublishOnly` still runs `npm run release:check` as a local safety net.

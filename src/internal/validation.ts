@@ -22,6 +22,7 @@
  */
 
 import { ConfigurationError, ValidationError } from "../errors";
+import { QredexHeader } from "../headers";
 import type {
   CreateAndLockPurchaseIntentRequest,
   CreateCreatorRequest,
@@ -35,7 +36,14 @@ import type {
   RecordPaidOrderRequest,
   RecordRefundRequest,
 } from "../models";
-import type { QredexEnvironment, QredexOptions } from "../types";
+import type {
+  AccessTokenAuthOptions,
+  ClientCredentialsAuthOptions,
+  QredexCallOptions,
+  QredexEnvironment,
+  QredexOptions,
+  QredexRetryPolicy,
+} from "../types";
 import { normalizeBaseUrl } from "./utils";
 
 const ALLOWED_ATTRIBUTION_WINDOWS = new Set([1, 3, 7, 14, 30]);
@@ -44,6 +52,15 @@ const UUID_PATTERN =
 const ISO_DATE_TIME_PATTERN =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/;
 const CURRENCY_PATTERN = /^[A-Z]{3}$/;
+const RESERVED_HEADER_NAMES = new Set([
+  "accept",
+  "authorization",
+  "content-type",
+  "user-agent",
+  QredexHeader.REQUEST_ID,
+  QredexHeader.TRACE_ID,
+  QredexHeader.SDK,
+]);
 const ENVIRONMENT_BASE_URLS: Record<QredexEnvironment, string> = {
   production: "https://api.qredex.com",
   staging: "https://staging-api.qredex.com",
@@ -56,9 +73,21 @@ function sdkValidation(message: string): never {
   });
 }
 
+function configValidation(message: string): never {
+  throw new ConfigurationError(message, {
+    errorCode: "sdk_configuration_error",
+  });
+}
+
 function assertNonEmptyString(field: string, value: unknown): asserts value is string {
   if (typeof value !== "string" || value.trim().length === 0) {
     sdkValidation(`${field} must be a non-empty string.`);
+  }
+}
+
+function assertConfigNonEmptyString(field: string, value: unknown): asserts value is string {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    configValidation(`${field} must be a non-empty string.`);
   }
 }
 
@@ -113,6 +142,161 @@ function assertOptionalPageSize(field: string, value: unknown): void {
   if (!Number.isInteger(value) || (value as number) < 0) {
     sdkValidation(`${field} must be an integer greater than or equal to 0.`);
   }
+}
+
+function assertPositiveFiniteNumber(
+  field: string,
+  value: unknown,
+  errorFactory: (message: string) => never,
+): void {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    errorFactory(`${field} must be a positive finite number.`);
+  }
+}
+
+function assertOptionalNonNegativeFiniteNumber(
+  field: string,
+  value: unknown,
+  errorFactory: (message: string) => never,
+): void {
+  if (value === undefined || value === null) {
+    return;
+  }
+
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    errorFactory(`${field} must be a finite number greater than or equal to 0.`);
+  }
+}
+
+function assertOptionalPositiveInteger(
+  field: string,
+  value: unknown,
+  errorFactory: (message: string) => never,
+): void {
+  if (value === undefined || value === null) {
+    return;
+  }
+
+  if (!Number.isInteger(value) || (value as number) <= 0) {
+    errorFactory(`${field} must be a positive integer when provided.`);
+  }
+}
+
+function assertNoReservedHeaders(
+  headers: Record<string, string> | undefined,
+  location: "defaultHeaders" | "callOptions.headers",
+  errorFactory: (message: string) => never,
+): void {
+  if (!headers) {
+    return;
+  }
+
+  for (const key of Object.keys(headers)) {
+    const normalized = key.trim().toLowerCase();
+
+    if (!normalized) {
+      continue;
+    }
+
+    if (!RESERVED_HEADER_NAMES.has(normalized)) {
+      continue;
+    }
+
+    if (normalized === QredexHeader.REQUEST_ID) {
+      errorFactory(`${location} cannot override '${QredexHeader.REQUEST_ID}'. Use requestId instead.`);
+    }
+
+    if (normalized === QredexHeader.TRACE_ID) {
+      errorFactory(`${location} cannot override '${QredexHeader.TRACE_ID}'. Use traceId instead.`);
+    }
+
+    if (normalized === "user-agent") {
+      errorFactory(`${location} cannot override 'user-agent'. Use userAgentSuffix instead.`);
+    }
+
+    errorFactory(`${location} cannot override reserved header '${normalized}'.`);
+  }
+}
+
+function validateRetryPolicy(
+  retry: QredexRetryPolicy | undefined,
+  fieldPrefix: string,
+): void {
+  if (!retry) {
+    return;
+  }
+
+  assertOptionalPositiveInteger(`${fieldPrefix}.maxAttempts`, retry.maxAttempts, configValidation);
+  assertOptionalNonNegativeFiniteNumber(
+    `${fieldPrefix}.baseDelayMs`,
+    retry.baseDelayMs,
+    configValidation,
+  );
+  assertOptionalNonNegativeFiniteNumber(
+    `${fieldPrefix}.maxDelayMs`,
+    retry.maxDelayMs,
+    configValidation,
+  );
+}
+
+function validateClientCredentialsAuthOptions(
+  auth: ClientCredentialsAuthOptions,
+): void {
+  assertConfigNonEmptyString("auth.clientId", auth.clientId);
+  assertConfigNonEmptyString("auth.clientSecret", auth.clientSecret);
+  assertOptionalNonNegativeFiniteNumber(
+    "auth.refreshWindowMs",
+    auth.refreshWindowMs,
+    configValidation,
+  );
+  validateRetryPolicy(auth.retry, "auth.retry");
+}
+
+function validateAccessTokenAuthOptions(auth: AccessTokenAuthOptions): void {
+  if (typeof auth.accessToken === "string") {
+    assertConfigNonEmptyString("auth.accessToken", auth.accessToken);
+  }
+}
+
+export function validateQredexOptions(options: QredexOptions): void {
+  if (!options.auth) {
+    configValidation("Qredex requires auth configuration.");
+  }
+
+  if (
+    options.environment !== undefined &&
+    !["production", "staging", "development"].includes(options.environment)
+  ) {
+    configValidation(
+      "Qredex environment must be 'production', 'staging', or 'development'.",
+    );
+  }
+
+  if (options.timeoutMs !== undefined) {
+    assertPositiveFiniteNumber("timeoutMs", options.timeoutMs, configValidation);
+  }
+
+  assertNoReservedHeaders(options.defaultHeaders, "defaultHeaders", configValidation);
+  validateRetryPolicy(options.readRetry, "readRetry");
+
+  if (options.auth.type === "access_token") {
+    validateAccessTokenAuthOptions(options.auth);
+    return;
+  }
+
+  validateClientCredentialsAuthOptions(options.auth);
+}
+
+export function validateCallOptions(callOptions?: QredexCallOptions): void {
+  if (!callOptions) {
+    return;
+  }
+
+  if (callOptions.timeoutMs !== undefined) {
+    assertPositiveFiniteNumber("timeoutMs", callOptions.timeoutMs, sdkValidation);
+  }
+
+  assertNoReservedHeaders(callOptions.headers, "callOptions.headers", sdkValidation);
 }
 
 export function resolveClientBaseUrl(options: QredexOptions): string {

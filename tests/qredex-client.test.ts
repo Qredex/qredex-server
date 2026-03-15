@@ -26,6 +26,7 @@ import { describe, expect, it } from "vitest";
 import {
   ApiError,
   AuthenticationError,
+  ConfigurationError,
   ConflictError,
   NetworkError,
   Qredex,
@@ -165,6 +166,80 @@ describe("Qredex", () => {
     ).toThrowError(
       "Qredex.bootstrap requires QREDEX_ENVIRONMENT to be 'production', 'staging', or 'development'.",
     );
+  });
+
+  it("fails fast when init receives invalid auth configuration", () => {
+    expect(() =>
+      Qredex.init({
+        auth: {
+          clientId: " ",
+          clientSecret: "secret",
+        },
+      }),
+    ).toThrowError(ConfigurationError);
+
+    expect(() =>
+      Qredex.init({
+        auth: {
+          clientId: "client",
+          clientSecret: " ",
+        },
+      }),
+    ).toThrowError("auth.clientSecret must be a non-empty string.");
+
+    expect(() =>
+      Qredex.init({
+        auth: {
+          type: "access_token",
+          accessToken: " ",
+        },
+      }),
+    ).toThrowError("auth.accessToken must be a non-empty string.");
+  });
+
+  it("fails fast when init receives invalid timeout or reserved default headers", () => {
+    expect(() =>
+      Qredex.init({
+        auth: {
+          type: "access_token",
+          accessToken: "token",
+        },
+        timeoutMs: 0,
+      }),
+    ).toThrowError("timeoutMs must be a positive finite number.");
+
+    expect(() =>
+      Qredex.init({
+        auth: {
+          type: "access_token",
+          accessToken: "token",
+        },
+        defaultHeaders: {
+          authorization: "Bearer not-allowed",
+        },
+      }),
+    ).toThrowError("defaultHeaders cannot override reserved header 'authorization'.");
+  });
+
+  it("rejects reserved correlation headers in defaultHeaders before any request is built", () => {
+    const { calls, fetch } = createFetchMock([]);
+
+    expect(() =>
+      Qredex.init({
+        auth: {
+          type: "access_token",
+          accessToken: "token",
+        },
+        defaultHeaders: {
+          "x-request-id": "forced-id",
+        },
+        fetch,
+      }),
+    ).toThrowError(
+      "defaultHeaders cannot override 'x-request-id'. Use requestId instead.",
+    );
+
+    expect(calls).toHaveLength(0);
   });
 
   it("issues tokens with client credentials and reuses the cached token for creator writes", async () => {
@@ -922,6 +997,48 @@ describe("Qredex", () => {
     expect(JSON.stringify(events)).not.toContain("token-debug");
   });
 
+  it("does not block requests on async event hooks", async () => {
+    let releaseEventHandler: (() => void) | undefined;
+    const blockedEvent = new Promise<void>((resolve) => {
+      releaseEventHandler = resolve;
+    });
+    const { fetch } = createFetchMock([
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
+      }),
+    ]);
+
+    const client = Qredex.init({
+      auth: {
+        type: "access_token",
+        accessToken: "non-blocking-token",
+      },
+      fetch,
+      onEvent: async (event) => {
+        if (event.type === "request") {
+          await blockedEvent;
+        }
+      },
+    });
+
+    const pendingList = client.creators.list();
+    const outcome = await Promise.race([
+      pendingList.then(() => "resolved"),
+      new Promise<"timed_out">((resolve) => {
+        setTimeout(() => resolve("timed_out"), 50);
+      }),
+    ]);
+
+    releaseEventHandler?.();
+    await pendingList;
+
+    expect(outcome).toBe("resolved");
+  });
+
   it("lets users subscribe to typed client events", async () => {
     const seen: string[] = [];
     const { fetch } = createFetchMock([
@@ -979,6 +1096,34 @@ describe("Qredex", () => {
       .catch(() => undefined);
 
     expect(events).toEqual(["links.create:store_id must be a valid UUID."]);
+  });
+
+  it("fails fast when call options contain invalid timeout or reserved headers", async () => {
+    const { fetch } = createFetchMock([]);
+
+    const client = Qredex.init({
+      auth: {
+        type: "access_token",
+        accessToken: "validation-token",
+      },
+      fetch,
+    });
+
+    const timeoutError = await client.creators.list({}, {
+      timeoutMs: 0,
+    }).catch((error) => error);
+    expect(timeoutError).toBeInstanceOf(QredexValidationError);
+    expect(timeoutError.message).toBe("timeoutMs must be a positive finite number.");
+
+    const headerError = await client.creators.list({}, {
+      headers: {
+        "x-request-id": "manual-id",
+      },
+    }).catch((error) => error);
+    expect(headerError).toBeInstanceOf(QredexValidationError);
+    expect(headerError.message).toBe(
+      "callOptions.headers cannot override 'x-request-id'. Use requestId instead.",
+    );
   });
 
   it("retries read requests only when explicitly configured", async () => {

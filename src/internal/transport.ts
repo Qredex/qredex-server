@@ -22,6 +22,7 @@
  */
 
 import { NetworkError, isQredexError } from "../errors";
+import { QredexHeader } from "../headers";
 import type {
   FetchLike,
   QredexClock,
@@ -31,6 +32,7 @@ import type {
 import { createApiError } from "./api-error-factory";
 import { QredexEventBus } from "./event-bus";
 import { buildRequestContext } from "./request-context";
+import { validateCallOptions } from "./validation";
 import {
   appendQuery,
   maybeParseJson,
@@ -96,24 +98,26 @@ export class Transport {
   }
 
   async request<T>(request: TransportRequest): Promise<T> {
+    validateCallOptions(request.callOptions);
+
     const url = new URL(`${this.baseUrl}${request.path}`);
     appendQuery(url, request.query);
     const context = buildRequestContext(this.timeoutMs, this.clock, request.callOptions);
 
     const headers = new Headers(this.defaultHeaders);
     headers.set("accept", "application/json");
-    headers.set("x-qredex-sdk", "@qredex/server");
+    headers.set(QredexHeader.SDK, "@qredex/server");
 
     if (!headers.has("user-agent")) {
       headers.set("user-agent", this.userAgent);
     }
 
     if (context.requestId) {
-      headers.set("x-request-id", context.requestId);
+      headers.set(QredexHeader.REQUEST_ID, context.requestId);
     }
 
     if (context.traceId) {
-      headers.set("x-trace-id", context.traceId);
+      headers.set(QredexHeader.TRACE_ID, context.traceId);
     }
 
     for (const [key, value] of Object.entries(context.headers)) {

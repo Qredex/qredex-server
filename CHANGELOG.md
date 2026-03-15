@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.2
+
+Public SDK hardening release for `@qredex/server`.
+
+Includes:
+
+- non-blocking SDK event hooks so observability cannot delay auth or request execution
+- fail-fast validation for `Qredex.init()` and `Qredex.bootstrap()`-driven configuration paths
+- reserved-header protection for SDK-owned request metadata
+- clarified bootstrap documentation so application-level values like `QREDEX_STORE_ID` are not implied to be SDK bootstrap inputs
+- package smoke verification for ESM, CJS, and packed tarball contents
+- CI and release-check updates so public-package validation runs before publish
+- deprecation guidance steering integrators from `onDebug` to `onEvent`
+- refreshed regression coverage and successful local plus live integration verification
+
 ## 0.1.1
 
 Incremental SDK hardening and release automation update for `qredex`.
@@ -16,6 +31,10 @@ Includes:
 - manual recovery path for existing release tags
 - release verification and publish helper scripts
 - local and live test coverage updates for order reads and release-safe behavior
+- non-blocking SDK event hooks so observability does not delay requests
+- fail-fast init/bootstrap validation for auth configuration, timeouts, retries, and reserved headers
+- package smoke verification in CI and release checks
+- `onDebug` deprecated in favor of `onEvent`
 
 ## 0.1.0
 

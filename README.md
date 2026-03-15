@@ -25,9 +25,10 @@ Set these environment variables:
 
 Optional environment configuration:
 
-- `QREDEX_STORE_ID` for flows that create links or record orders for a specific store
 - `QREDEX_SCOPE`
 - `QREDEX_ENVIRONMENT` defaults to `production`
+
+Application-specific environment values can still be useful for your own request payload assembly, for example `QREDEX_STORE_ID`, but `Qredex.bootstrap()` does not read them.
 
 Then use the SDK:
 
@@ -154,6 +155,10 @@ const qredex = Qredex.init({
   },
 });
 ```
+
+Event hooks are best-effort and non-blocking. Keep them lightweight, but they will not delay SDK requests.
+
+`onDebug` is a deprecated alias for `onEvent`. Prefer `onEvent` for new integrations.
 
 Event types include:
 

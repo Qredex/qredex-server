@@ -62,15 +62,15 @@ export class QredexEventBus implements QredexEventSubscriber {
 
   async emit(event: QredexEvent): Promise<void> {
     for (const hook of this.hooks) {
-      await this.invoke(hook, event);
+      void this.invoke(hook, event);
     }
 
     for (const handler of this.allHandlers) {
-      await this.invoke(handler, event);
+      void this.invoke(handler, event);
     }
 
     for (const handler of this.handlersByType.get(event.type) ?? []) {
-      await this.invoke(handler, event);
+      void this.invoke(handler, event);
     }
   }
 

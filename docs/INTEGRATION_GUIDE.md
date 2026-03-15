@@ -9,11 +9,12 @@
 - `QREDEX_CLIENT_ID`
 - `QREDEX_CLIENT_SECRET`
 - optional `QREDEX_SCOPE`
-- `QREDEX_STORE_ID` for link/order/refund calls
 - optional `QREDEX_ENVIRONMENT`:
   - `production` (default)
   - `staging`
   - `development`
+
+Application-specific values such as `QREDEX_STORE_ID` remain your responsibility for request payload assembly. `Qredex.bootstrap()` does not read them.
 
 ## 1. Create The Client
 
@@ -126,6 +127,7 @@ const refund = await qredex.refunds.recordRefund({
 - Treat `409` outcomes as policy/conflict rejections, not transport failures.
 - Expect the SDK to reject obviously invalid request shapes locally before making a network call.
 - Subscribe to `qredex.events` or use `onEvent` for sanitized request, auth, retry, and validation lifecycle visibility.
+- Event hooks are best-effort and non-blocking, so observability does not sit on the request critical path.
 - Auth retries happen internally for token issuance. Read retries are opt-in and only apply to `GET` and `HEAD`.
 - For writes, prefer replaying stable `external_order_id` and `external_refund_id` over automatic retries.
 - Never log `client_secret`, bearer tokens, IIT, or PIT in plaintext.
