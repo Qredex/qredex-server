@@ -8,6 +8,7 @@ import type {
   IssueInfluenceIntentTokenRequest,
   ListCreatorsRequest,
   ListLinksRequest,
+  ListOrdersRequest,
   RecordPaidOrderRequest,
   RecordRefundRequest,
 } from "../models";
@@ -207,4 +208,13 @@ export function validateRecordRefundRequest(request: RecordRefundRequest): void 
   assertNonEmptyString("external_refund_id", request.external_refund_id);
   assertOptionalNonNegativeNumber("refund_total", request.refund_total);
   assertOptionalIsoDateTime("refunded_at", request.refunded_at);
+}
+
+export function validateListOrdersRequest(request: ListOrdersRequest): void {
+  assertOptionalPageSize("page", request.page);
+  assertOptionalPageSize("size", request.size);
+}
+
+export function validateOrderAttributionId(orderAttributionId: string): void {
+  assertUuid("orderAttributionId", orderAttributionId);
 }

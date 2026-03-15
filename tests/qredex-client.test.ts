@@ -192,6 +192,102 @@ describe("Qredex", () => {
     expect(getJsonBody<{ handle: string }>(calls[1]!).handle).toBe("alice");
   });
 
+  it("lists order attributions through the integrations orders read endpoint", async () => {
+    const { calls, fetch } = createFetchMock([
+      jsonResponse(200, {
+        access_token: "orders-read-token",
+        token_type: "Bearer",
+        expires_in: 3600,
+      }),
+      jsonResponse(200, {
+        items: [
+          {
+            id: "55555555-5555-4555-8555-555555555555",
+            merchant_id: UUIDS.merchant,
+            order_source: "DIRECT_API",
+            external_order_id: "order-1001",
+            currency: "USD",
+            duplicate_suspect: false,
+            integrity_score: 93,
+            integrity_band: "HIGH",
+            review_required: false,
+            resolution_status: "ATTRIBUTED",
+            created_at: "2026-03-15T10:05:00Z",
+            updated_at: "2026-03-15T10:05:00Z",
+          },
+        ],
+        page: 0,
+        size: 20,
+        total_elements: 1,
+        total_pages: 1,
+      }),
+    ]);
+
+    const qredex = Qredex.init({
+      environment: "staging",
+      auth: {
+        clientId: "client",
+        clientSecret: "secret",
+      },
+      fetch,
+    });
+
+    const orders = await qredex.orders.list({ page: 0, size: 20 });
+
+    expect(orders.items).toHaveLength(1);
+    expect(orders.items[0]!.external_order_id).toBe("order-1001");
+    expect(String(calls[1]!.input)).toBe(
+      "https://staging-api.qredex.com/api/v1/integrations/orders?page=0&size=20",
+    );
+  });
+
+  it("gets order attribution details through the integrations details endpoint", async () => {
+    const orderAttributionId = "55555555-5555-4555-8555-555555555555";
+    const { calls, fetch } = createFetchMock([
+      jsonResponse(200, {
+        access_token: "orders-read-token",
+        token_type: "Bearer",
+        expires_in: 3600,
+      }),
+      jsonResponse(200, {
+        id: orderAttributionId,
+        order_source: "DIRECT_API",
+        external_order_id: "order-1001",
+        currency: "USD",
+        duplicate_suspect: false,
+        integrity_score: 93,
+        integrity_band: "HIGH",
+        review_required: false,
+        resolution_status: "ATTRIBUTED",
+        timeline: [
+          {
+            event_type: "ORDER_RECORDED",
+            occurred_at: "2026-03-15T10:05:00Z",
+          },
+        ],
+        created_at: "2026-03-15T10:05:00Z",
+        updated_at: "2026-03-15T10:05:00Z",
+      }),
+    ]);
+
+    const qredex = Qredex.init({
+      environment: "staging",
+      auth: {
+        clientId: "client",
+        clientSecret: "secret",
+      },
+      fetch,
+    });
+
+    const details = await qredex.orders.getDetails(orderAttributionId);
+
+    expect(details.id).toBe(orderAttributionId);
+    expect(details.timeline?.[0]?.event_type).toBe("ORDER_RECORDED");
+    expect(String(calls[1]!.input)).toBe(
+      `https://staging-api.qredex.com/api/v1/integrations/orders/${orderAttributionId}/details`,
+    );
+  });
+
   it("supports the canonical integrations flow across creators, links, intents, orders, and refunds", async () => {
     const { calls, fetch } = createFetchMock([
       jsonResponse(200, {
@@ -453,6 +549,43 @@ describe("Qredex", () => {
     expect(error.message).toBe("currency is required");
     expect(error.requestId).toBe("req-123");
     expect(error.traceId).toBe("trace-456");
+  });
+
+  it("maps 404 order details responses into ApiError with Qredex metadata", async () => {
+    const orderAttributionId = "55555555-5555-4555-8555-555555555555";
+    const { fetch } = createFetchMock([
+      jsonResponse(200, {
+        access_token: "token-orders-read",
+        token_type: "Bearer",
+        expires_in: 3600,
+      }),
+      jsonResponse(
+        404,
+        {
+          error_code: "order_not_found",
+          message: "Order attribution not found",
+        },
+        {
+          "x-request-id": "req-orders-404",
+        },
+      ),
+    ]);
+
+    const qredex = Qredex.init({
+      environment: "staging",
+      auth: {
+        clientId: "client",
+        clientSecret: "secret",
+      },
+      fetch,
+    });
+
+    const error = await qredex.orders.getDetails(orderAttributionId).catch((thrown) => thrown);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.status).toBe(404);
+    expect(error.errorCode).toBe("order_not_found");
+    expect(error.requestId).toBe("req-orders-404");
   });
 
   it("maps auth endpoint failures into AuthenticationError", async () => {

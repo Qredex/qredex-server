@@ -93,7 +93,20 @@ const order = await qredex.orders.recordPaidOrder({
 
 Do not collapse Qredex attribution fields into a generic success flag. Consume `resolution_status`, `token_integrity`, and `integrity_reason` directly.
 
-## 7. Refund Ingestion
+## 7. Order Reads
+
+Use `qredex.orders.list()` for machine-readable order attribution retrieval and `qredex.orders.getDetails(orderAttributionId)` for the full attribution record.
+
+```ts
+const orders = await qredex.orders.list({
+  page: 0,
+  size: 20,
+});
+
+const orderDetails = await qredex.orders.getDetails(orders.items[0]!.id);
+```
+
+## 8. Refund Ingestion
 
 Use stable external refund IDs and accurate timestamps/totals.
 

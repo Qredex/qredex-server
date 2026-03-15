@@ -7,7 +7,7 @@
 
 Canonical Node.js server SDK for Qredex machine-to-machine integrations.
 
-`qredex` is built for backend systems that need to create creators and links, issue IITs, lock PITs, and record paid orders and refunds without dealing with raw HTTP plumbing.
+`qredex` for Node.js is built for backend systems that need to create creators and links, issue IITs, lock PITs, and record paid orders and refunds without dealing with raw HTTP plumbing.
 
 ## Install
 
@@ -51,7 +51,7 @@ const link = await qredex.links.create({
 - typed responses that preserve canonical Qredex field names
 - typed errors with `status`, `error_code`, `requestId`, and `traceId`
 - sanitized SDK events for observability without leaking secrets
-- deterministic behavior aligned with the canonical IIT -> PIT -> order -> refund flow
+- deterministic behavior aligned with the canonical machine integration flow around IIT -> PIT -> order -> refund
 
 ## Public API
 
@@ -69,6 +69,8 @@ await qredex.links.list(filters);
 await qredex.intents.issueInfluenceIntentToken(request);
 await qredex.intents.lockPurchaseIntent(request);
 
+await qredex.orders.list({ page: 0, size: 20 });
+await qredex.orders.getDetails(orderAttributionId);
 await qredex.orders.recordPaidOrder(request);
 await qredex.refunds.recordRefund(request);
 ```
@@ -80,7 +82,7 @@ await qredex.refunds.recordRefund(request);
 | `creators` | `create`, `get`, `list` | `QredexScope.CREATORS_WRITE`, `QredexScope.CREATORS_READ` |
 | `links` | `create`, `get`, `list` | `QredexScope.LINKS_WRITE`, `QredexScope.LINKS_READ` |
 | `intents` | `issueInfluenceIntentToken`, `lockPurchaseIntent` | `QredexScope.INTENTS_WRITE` |
-| `orders` | `recordPaidOrder` | `QredexScope.ORDERS_WRITE` |
+| `orders` | `list`, `getDetails`, `recordPaidOrder` | `QredexScope.ORDERS_READ`, `QredexScope.ORDERS_WRITE` |
 | `refunds` | `recordRefund` | `QredexScope.ORDERS_WRITE` |
 
 If you want programmatic configuration instead of environment bootstrap:
@@ -214,8 +216,8 @@ try {
 
 1. Create or fetch creators.
 2. Create or fetch links.
-3. Issue IIT.
-4. Lock PIT.
+3. Issue IIT where backend issuance is appropriate.
+4. Lock PIT for authenticated machine flows when that is the canonical path.
 5. Record the paid order.
 6. Record refunds later with stable external refund IDs.
 
@@ -233,7 +235,9 @@ try {
 - [auth-and-create-creator.ts](./examples/auth-and-create-creator.ts)
 - [create-link.ts](./examples/create-link.ts)
 - [issue-iit.ts](./examples/issue-iit.ts)
+- [list-orders.ts](./examples/list-orders.ts)
 - [lock-pit.ts](./examples/lock-pit.ts)
+- [get-order-details.ts](./examples/get-order-details.ts)
 - [record-paid-order.ts](./examples/record-paid-order.ts)
 - [record-refund.ts](./examples/record-refund.ts)
 

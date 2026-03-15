@@ -225,6 +225,11 @@ export interface RecordPaidOrderRequest {
   purchase_intent_token?: string | null;
 }
 
+export interface ListOrdersRequest {
+  page?: number;
+  size?: number;
+}
+
 export interface RecordRefundRequest {
   store_id: string;
   external_order_id: string;
@@ -263,6 +268,71 @@ export interface OrderAttributionResponse {
   integrity_band: IntegrityBand;
   review_required: boolean;
   resolution_status: ResolutionStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderAttributionPageResponse {
+  items: OrderAttributionResponse[];
+  page: number;
+  size: number;
+  total_elements: number;
+  total_pages: number;
+}
+
+export interface OrderAttributionScoreBreakdownResponse {
+  score_version?: number;
+  base_score?: number;
+  origin_adjustment?: number;
+  duplicate_adjustment?: number;
+  final_score?: number;
+  token_integrity?: TokenIntegrity | null;
+  integrity_reason?: IntegrityReason | null;
+  window_status?: WindowStatus | null;
+  resolution_status: ResolutionStatus;
+  origin_match_status?: OriginMatchStatus | null;
+  duplicate_confidence?: DuplicateConfidence | null;
+  review_required?: boolean;
+  review_reasons?: string[];
+}
+
+export interface OrderAttributionTimelineEventResponse {
+  event_type?: string;
+  occurred_at?: string;
+}
+
+export interface OrderAttributionDetailsResponse {
+  id: string;
+  order_source: OrderSource;
+  external_order_id: string;
+  order_number?: string | null;
+  paid_at?: string | null;
+  currency: string;
+  subtotal_price?: number | null;
+  discount_total?: number | null;
+  total_price?: number | null;
+  link_id?: string | null;
+  link_name?: string | null;
+  link_code?: string | null;
+  creator_id?: string | null;
+  creator_handle?: string | null;
+  creator_display_name?: string | null;
+  duplicate_suspect: boolean;
+  duplicate_confidence?: DuplicateConfidence | null;
+  duplicate_reason?: DuplicateReason | null;
+  duplicate_of_order_attribution_id?: string | null;
+  attribution_locked_at?: string | null;
+  attribution_window_days?: number | null;
+  window_status?: WindowStatus | null;
+  token_integrity?: TokenIntegrity | null;
+  integrity_reason?: IntegrityReason | null;
+  origin_match_status?: OriginMatchStatus | null;
+  integrity_score: number;
+  integrity_band: IntegrityBand;
+  review_required: boolean;
+  score_breakdown_json?: OrderAttributionScoreBreakdownResponse | null;
+  resolution_status: ResolutionStatus;
+  timeline?: OrderAttributionTimelineEventResponse[];
   created_at: string;
   updated_at: string;
 }
