@@ -5,6 +5,7 @@ import type {
   PurchaseIntentResponse,
 } from "../models";
 import type { QredexCallOptions } from "../types";
+import { ValidationError } from "../errors";
 import { HttpClient } from "../internal/http-client";
 import {
   validateIssueInfluenceIntentTokenRequest,
@@ -18,7 +19,17 @@ export class IntentsClient {
     request: IssueInfluenceIntentTokenRequest,
     options?: QredexCallOptions,
   ): Promise<InfluenceIntentResponse> {
-    validateIssueInfluenceIntentTokenRequest(request);
+    try {
+      validateIssueInfluenceIntentTokenRequest(request);
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        return this.http.reportValidationFailure(
+          "intents.issueInfluenceIntentToken",
+          error,
+        );
+      }
+      throw error;
+    }
     return this.http.request<InfluenceIntentResponse>({
       method: "POST",
       path: "/api/v1/integrations/intents/token",
@@ -31,7 +42,14 @@ export class IntentsClient {
     request: CreateAndLockPurchaseIntentRequest,
     options?: QredexCallOptions,
   ): Promise<PurchaseIntentResponse> {
-    validateLockPurchaseIntentRequest(request);
+    try {
+      validateLockPurchaseIntentRequest(request);
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        return this.http.reportValidationFailure("intents.lockPurchaseIntent", error);
+      }
+      throw error;
+    }
     return this.http.request<PurchaseIntentResponse>({
       method: "POST",
       path: "/api/v1/integrations/intents/lock",

@@ -1,4 +1,5 @@
 export { QredexClient, QredexAuthClient } from "./client";
+export type { QredexEventHandler, QredexEventSubscriber } from "./events";
 export {
   ApiError,
   AuthenticationError,

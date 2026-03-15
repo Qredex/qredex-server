@@ -493,6 +493,80 @@ describe("QredexClient", () => {
     expect(getHeader(calls[0]!, "authorization")).toBe("Bearer static-token");
   });
 
+  it("defaults to the production API host when no baseUrl is provided", async () => {
+    const { calls, fetch } = createFetchMock([
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
+      }),
+    ]);
+
+    const client = QredexClient.init({
+      auth: {
+        type: "access_token",
+        accessToken: "prod-token",
+      },
+      fetch,
+    });
+
+    await client.creators.list();
+
+    expect(String(calls[0]!.input)).toBe("https://api.qredex.com/api/v1/integrations/creators");
+  });
+
+  it("supports environment presets without requiring a baseUrl", async () => {
+    const { calls, fetch } = createFetchMock([
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
+      }),
+    ]);
+
+    const client = QredexClient.init({
+      environment: "staging",
+      auth: {
+        type: "access_token",
+        accessToken: "stage-token",
+      },
+      fetch,
+    });
+
+    await client.creators.list();
+
+    expect(String(calls[0]!.input)).toBe("https://staging-api.qredex.com/api/v1/integrations/creators");
+  });
+
+  it("supports the development environment preset without requiring a baseUrl", async () => {
+    const { calls, fetch } = createFetchMock([
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
+      }),
+    ]);
+
+    const client = QredexClient.init({
+      environment: "development",
+      auth: {
+        type: "access_token",
+        accessToken: "dev-token",
+      },
+      fetch,
+    });
+
+    await client.creators.list();
+
+    expect(String(calls[0]!.input)).toBe("http://localhost:8080/api/v1/integrations/creators");
+  });
+
   it("fails fast on invalid SDK request input before making a network call", async () => {
     const { calls, fetch } = createFetchMock([]);
 
@@ -520,13 +594,20 @@ describe("QredexClient", () => {
     expect(calls).toHaveLength(0);
   });
 
-  it("emits sanitized debug events without leaking authorization data", async () => {
+  it("emits sanitized events without leaking authorization data", async () => {
     const events: Array<Record<string, unknown>> = [];
     const { fetch } = createFetchMock([
       jsonResponse(200, {
         access_token: "token-debug",
         token_type: "Bearer",
         expires_in: 3600,
+      }),
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
       }),
       jsonResponse(200, {
         items: [],
@@ -544,21 +625,153 @@ describe("QredexClient", () => {
         clientSecret: "secret",
       },
       fetch,
-      onDebug: (event) => {
+      onEvent: (event) => {
         events.push(event as unknown as Record<string, unknown>);
       },
     });
 
     await client.creators.list();
+    await client.creators.list();
 
     expect(events.map((event) => event.type)).toEqual([
+      "auth_cache_miss",
       "request",
       "response",
       "auth_token_issued",
       "request",
       "response",
+      "auth_cache_hit",
+      "request",
+      "response",
     ]);
     expect(JSON.stringify(events)).not.toContain("secret");
     expect(JSON.stringify(events)).not.toContain("token-debug");
+  });
+
+  it("lets users subscribe to typed client events", async () => {
+    const seen: string[] = [];
+    const { fetch } = createFetchMock([
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
+      }),
+    ]);
+
+    const client = QredexClient.init({
+      auth: {
+        type: "access_token",
+        accessToken: "subscribed-token",
+      },
+      fetch,
+    });
+
+    const unsubscribe = client.events.on("response", (event) => {
+      seen.push(`${event.type}:${event.status}`);
+    });
+
+    await client.creators.list();
+    unsubscribe();
+
+    expect(seen).toEqual(["response:200"]);
+  });
+
+  it("emits validation_failed events for local SDK validation", async () => {
+    const events: string[] = [];
+    const { fetch } = createFetchMock([]);
+
+    const client = QredexClient.init({
+      auth: {
+        type: "access_token",
+        accessToken: "validation-token",
+      },
+      fetch,
+      onEvent: (event) => {
+        if (event.type === "validation_failed") {
+          events.push(`${event.operation}:${event.message}`);
+        }
+      },
+    });
+
+    await client.links
+      .create({
+        store_id: "not-a-uuid",
+        creator_id: UUIDS.creator,
+        link_name: "demo",
+        destination_path: "/products/demo",
+      })
+      .catch(() => undefined);
+
+    expect(events).toEqual(["links.create:store_id must be a valid UUID."]);
+  });
+
+  it("retries read requests only when explicitly configured", async () => {
+    const events: string[] = [];
+    const { calls, fetch } = createFetchMock([
+      textResponse(503, "temporary outage"),
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
+      }),
+    ]);
+
+    const client = QredexClient.init({
+      auth: {
+        type: "access_token",
+        accessToken: "retry-token",
+      },
+      fetch,
+      readRetry: {
+        maxAttempts: 2,
+        baseDelayMs: 0,
+        maxDelayMs: 0,
+      },
+      onEvent: (event) => {
+        if (event.type === "retry_scheduled") {
+          events.push(`${event.source}:${event.reason}:${event.attempt}`);
+        }
+      },
+    });
+
+    const result = await client.creators.list();
+
+    expect(result.items).toEqual([]);
+    expect(calls).toHaveLength(2);
+    expect(events).toEqual(["read:http_5xx:1"]);
+  });
+
+  it("uses the injected clock for deterministic auth event timing", async () => {
+    const events: Array<Record<string, unknown>> = [];
+    const { fetch } = createFetchMock([
+      jsonResponse(200, {
+        access_token: "clock-token",
+        token_type: "Bearer",
+        expires_in: 3600,
+      }),
+    ]);
+
+    const client = QredexClient.init({
+      auth: {
+        clientId: "clock-client",
+        clientSecret: "clock-secret",
+      },
+      clock: {
+        now: () => Date.parse("2026-03-15T12:00:00Z"),
+      },
+      fetch,
+      onEvent: (event) => {
+        events.push(event as unknown as Record<string, unknown>);
+      },
+    });
+
+    await client.auth.issueToken();
+
+    const authEvent = events.find((event) => event.type === "auth_token_issued");
+    expect(authEvent?.expiresAt).toBe("2026-03-15T13:00:00.000Z");
   });
 });

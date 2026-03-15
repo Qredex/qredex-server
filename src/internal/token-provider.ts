@@ -6,12 +6,12 @@ import type {
   IssueTokenRequest,
   OAuthTokenResponse,
   QredexAuthOptions,
+  QredexClock,
   QredexCallOptions,
-  QredexDebugHook,
   QredexLogger,
   QredexTokenCache,
 } from "../types";
-import { emitDebugEvent } from "./debug";
+import { QredexEventBus } from "./event-bus";
 import { Transport } from "./transport";
 import {
   clampRetryPolicy,
@@ -38,8 +38,9 @@ export interface TokenProvider {
 
 export interface TokenProviderOptions {
   auth: QredexAuthOptions;
+  clock: QredexClock;
+  eventBus: QredexEventBus;
   logger?: QredexLogger;
-  onDebug?: QredexDebugHook;
   transport: Transport;
 }
 
@@ -81,16 +82,18 @@ class StaticAccessTokenProvider implements TokenProvider {
 
 class ClientCredentialsTokenProvider implements TokenProvider {
   private readonly auth: ClientCredentialsAuthOptions;
+  private readonly clock: QredexClock;
+  private readonly eventBus: QredexEventBus;
   private readonly logger?: QredexLogger;
-  private readonly onDebug?: QredexDebugHook;
   private readonly refreshWindowMs: number;
   private readonly tokenCache: QredexTokenCache;
   private inFlightToken?: Promise<CachedAccessToken>;
 
   constructor(options: TokenProviderOptions & { auth: ClientCredentialsAuthOptions }) {
     this.auth = options.auth;
+    this.clock = options.clock;
+    this.eventBus = options.eventBus;
     this.logger = options.logger;
-    this.onDebug = options.onDebug;
     this.transport = options.transport;
     this.refreshWindowMs = Math.max(0, this.auth.refreshWindowMs ?? 30_000);
     this.tokenCache = this.auth.tokenCache ?? new MemoryTokenCache();
@@ -107,9 +110,19 @@ class ClientCredentialsTokenProvider implements TokenProvider {
     callOptions?: QredexCallOptions,
   ): Promise<string> {
     const cachedToken = await this.tokenCache.get();
-    if (cachedToken && cachedToken.expiresAtMs - this.refreshWindowMs > Date.now()) {
+    if (cachedToken && cachedToken.expiresAtMs - this.refreshWindowMs > this.clock.now()) {
+      await this.eventBus.emit({
+        type: "auth_cache_hit",
+        expiresAt: toIsoDate(cachedToken.expiresAtMs),
+        scope: cachedToken.scope,
+      });
       return `${cachedToken.tokenType} ${cachedToken.accessToken}`;
     }
+
+    await this.eventBus.emit({
+      type: "auth_cache_miss",
+      scope: normalizeScope(this.auth.scope),
+    });
 
     if (!this.inFlightToken) {
       const pending = this.fetchToken(
@@ -168,7 +181,7 @@ class ClientCredentialsTokenProvider implements TokenProvider {
           callOptions,
         });
 
-        const issuedAtMs = Date.now();
+        const issuedAtMs = this.clock.now();
         const cachedToken: CachedAccessToken = {
           accessToken: response.access_token,
           tokenType: response.token_type || "Bearer",
@@ -192,7 +205,7 @@ class ClientCredentialsTokenProvider implements TokenProvider {
           scope: event.scope,
           tokenType: event.tokenType,
         });
-        await emitDebugEvent(this.onDebug, this.logger, event);
+        await this.eventBus.emit(event);
         await this.auth.onTokenIssued?.({
           token_type: cachedToken.tokenType,
           expires_in: response.expires_in,
@@ -207,7 +220,17 @@ class ClientCredentialsTokenProvider implements TokenProvider {
           throw error;
         }
 
-        await sleep(computeRetryDelayMs(attempt, retry));
+        const delayMs = computeRetryDelayMs(attempt, retry);
+        await this.eventBus.emit({
+          type: "retry_scheduled",
+          attempt,
+          delayMs,
+          maxAttempts: retry.maxAttempts,
+          path: "/api/v1/auth/token",
+          reason: this.retryReason(error),
+          source: "auth",
+        });
+        await sleep(delayMs);
       }
     }
 
@@ -232,5 +255,19 @@ class ClientCredentialsTokenProvider implements TokenProvider {
     }
 
     return false;
+  }
+
+  private retryReason(
+    error: unknown,
+  ): "http_429" | "http_5xx" | "network_error" {
+    if (error instanceof NetworkError) {
+      return "network_error";
+    }
+
+    if (error instanceof QredexError && error.status === 429) {
+      return "http_429";
+    }
+
+    return "http_5xx";
   }
 }

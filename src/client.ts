@@ -1,15 +1,17 @@
 import { ConfigurationError } from "./errors";
+import type { QredexEventSubscriber } from "./events";
 import type { OAuthTokenResponse } from "./types";
 import type {
   IssueTokenRequest,
   QredexCallOptions,
   QredexClientOptions,
+  QredexClock,
 } from "./types";
+import { QredexEventBus } from "./internal/event-bus";
 import { HttpClient } from "./internal/http-client";
 import { createTokenProvider, type TokenProvider } from "./internal/token-provider";
 import { Transport } from "./internal/transport";
-import { normalizeBaseUrl } from "./internal/utils";
-import { validateClientConfiguration } from "./internal/validation";
+import { resolveClientBaseUrl } from "./internal/validation";
 import { CreatorsClient } from "./resources/creators";
 import { IntentsClient } from "./resources/intents";
 import { LinksClient } from "./resources/links";
@@ -34,6 +36,7 @@ export class QredexAuthClient {
 export class QredexClient {
   readonly auth: QredexAuthClient;
   readonly creators: CreatorsClient;
+  readonly events: QredexEventSubscriber;
   readonly links: LinksClient;
   readonly intents: IntentsClient;
   readonly orders: OrdersClient;
@@ -44,30 +47,46 @@ export class QredexClient {
   }
 
   private constructor(options: QredexClientOptions) {
-    validateClientConfiguration(options.baseUrl);
+    const clock: QredexClock = options.clock ?? {
+      now: () => Date.now(),
+    };
 
     if (!options.auth) {
       throw new ConfigurationError("QredexClient requires auth configuration.");
     }
 
+    const eventBus = new QredexEventBus(options.logger, [
+      ...(options.onEvent ? [options.onEvent] : []),
+      ...(options.onDebug ? [options.onDebug] : []),
+    ]);
+
     const transport = new Transport({
-      baseUrl: normalizeBaseUrl(options.baseUrl),
+      baseUrl: resolveClientBaseUrl(options),
+      clock,
+      eventBus,
       fetch: options.fetch ?? fetch,
       timeoutMs: options.timeoutMs ?? 10_000,
       logger: options.logger,
-      onDebug: options.onDebug,
       defaultHeaders: options.defaultHeaders,
       userAgentSuffix: options.userAgentSuffix,
     });
     const tokenProvider = createTokenProvider({
       auth: options.auth,
+      clock,
+      eventBus,
       transport,
       logger: options.logger,
-      onDebug: options.onDebug,
     });
-    const http = new HttpClient(transport, tokenProvider);
+    const http = new HttpClient(
+      eventBus,
+      options.logger,
+      options.readRetry,
+      transport,
+      tokenProvider,
+    );
 
     this.auth = new QredexAuthClient(tokenProvider);
+    this.events = eventBus;
     this.creators = new CreatorsClient(http);
     this.links = new LinksClient(http);
     this.intents = new IntentsClient(http);

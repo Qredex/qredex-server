@@ -6,6 +6,7 @@ import type {
   ListCreatorsRequest,
 } from "../models";
 import type { QredexCallOptions } from "../types";
+import { ValidationError } from "../errors";
 import { HttpClient } from "../internal/http-client";
 import {
   validateCreateCreatorRequest,
@@ -20,7 +21,14 @@ export class CreatorsClient {
     request: CreateCreatorRequest,
     options?: QredexCallOptions,
   ): Promise<CreatorResponse> {
-    validateCreateCreatorRequest(request);
+    try {
+      validateCreateCreatorRequest(request);
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        return this.http.reportValidationFailure("creators.create", error);
+      }
+      throw error;
+    }
     // Creator writes are part of the integrations contract in the auth/docs set,
     // even though the current OpenAPI file only documents GETs on this path.
     return this.http.request<CreatorResponse>({
@@ -35,7 +43,14 @@ export class CreatorsClient {
     request: GetCreatorRequest,
     options?: QredexCallOptions,
   ): Promise<CreatorResponse> {
-    validateGetCreatorRequest(request);
+    try {
+      validateGetCreatorRequest(request);
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        return this.http.reportValidationFailure("creators.get", error);
+      }
+      throw error;
+    }
     return this.http.request<CreatorResponse>({
       method: "GET",
       path: `/api/v1/integrations/creators/${request.creator_id}`,
@@ -47,7 +62,14 @@ export class CreatorsClient {
     request: ListCreatorsRequest = {},
     options?: QredexCallOptions,
   ): Promise<CreatorPageResponse> {
-    validateListCreatorsRequest(request);
+    try {
+      validateListCreatorsRequest(request);
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        return this.http.reportValidationFailure("creators.list", error);
+      }
+      throw error;
+    }
     return this.http.request<CreatorPageResponse>({
       method: "GET",
       path: "/api/v1/integrations/creators",

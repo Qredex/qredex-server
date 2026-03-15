@@ -11,6 +11,8 @@ import type {
   RecordPaidOrderRequest,
   RecordRefundRequest,
 } from "../models";
+import type { QredexClientOptions, QredexEnvironment } from "../types";
+import { normalizeBaseUrl } from "./utils";
 
 const ALLOWED_ATTRIBUTION_WINDOWS = new Set([1, 3, 7, 14, 30]);
 const UUID_PATTERN =
@@ -18,6 +20,11 @@ const UUID_PATTERN =
 const ISO_DATE_TIME_PATTERN =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/;
 const CURRENCY_PATTERN = /^[A-Z]{3}$/;
+const ENVIRONMENT_BASE_URLS: Record<QredexEnvironment, string> = {
+  production: "https://api.qredex.com",
+  staging: "https://staging-api.qredex.com",
+  development: "http://localhost:8080",
+};
 
 function sdkValidation(message: string): never {
   throw new ValidationError(message, {
@@ -84,10 +91,8 @@ function assertOptionalPageSize(field: string, value: unknown): void {
   }
 }
 
-export function validateClientConfiguration(baseUrl: string): void {
-  if (!baseUrl) {
-    throw new ConfigurationError("QredexClient requires a baseUrl.");
-  }
+export function resolveClientBaseUrl(options: QredexClientOptions): string {
+  const baseUrl = options.baseUrl ?? ENVIRONMENT_BASE_URLS[options.environment ?? "production"];
 
   let url: URL;
 
@@ -102,6 +107,8 @@ export function validateClientConfiguration(baseUrl: string): void {
       "QredexClient baseUrl must use http or https.",
     );
   }
+
+  return normalizeBaseUrl(url.toString());
 }
 
 export function validateCreateCreatorRequest(request: CreateCreatorRequest): void {

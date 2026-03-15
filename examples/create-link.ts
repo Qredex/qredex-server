@@ -1,7 +1,6 @@
 import { QredexClient } from "../src";
 
 const client = QredexClient.init({
-  baseUrl: process.env.QREDEX_BASE_URL!,
   auth: {
     clientId: process.env.QREDEX_CLIENT_ID!,
     clientSecret: process.env.QREDEX_CLIENT_SECRET!,

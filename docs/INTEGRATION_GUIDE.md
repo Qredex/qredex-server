@@ -6,10 +6,13 @@
 
 ## Required Environment
 
-- `QREDEX_BASE_URL`
 - `QREDEX_CLIENT_ID`
 - `QREDEX_CLIENT_SECRET`
 - `QREDEX_STORE_ID` for link/order/refund calls
+- optional `QREDEX_ENVIRONMENT`:
+  - `production` (default)
+  - `staging`
+  - `development`
 
 ## 1. Create The Client
 
@@ -17,13 +20,26 @@
 import { QredexClient } from "@qredex/sdk";
 
 export const client = QredexClient.init({
-  baseUrl: process.env.QREDEX_BASE_URL!,
+  environment:
+    process.env.QREDEX_ENVIRONMENT === "staging"
+      ? "staging"
+      : process.env.QREDEX_ENVIRONMENT === "development"
+        ? "development"
+        : "production",
   auth: {
     clientId: process.env.QREDEX_CLIENT_ID!,
     clientSecret: process.env.QREDEX_CLIENT_SECRET!,
   },
 });
 ```
+
+Canonical host presets are built in:
+
+- `production` -> `https://api.qredex.com`
+- `staging` -> `https://staging-api.qredex.com`
+- `development` -> `http://localhost:8080`
+
+Use `baseUrl` only as an advanced override for controlled testing.
 
 ## 2. Creator Setup
 
@@ -110,6 +126,8 @@ const refund = await client.refunds.recordRefund({
 - Treat `INGESTED` and `IDEMPOTENT` as successful business acknowledgements when documented by Qredex policy.
 - Treat `409` outcomes as policy/conflict rejections, not transport failures.
 - Expect the SDK to reject obviously invalid request shapes locally before making a network call.
+- Subscribe to `client.events` or use `onEvent` for sanitized request, auth, retry, and validation lifecycle visibility.
+- Auth retries happen internally for token issuance. Read retries are opt-in and only apply to `GET` and `HEAD`.
 - Never log `client_secret`, bearer tokens, IIT, or PIT in plaintext.
 - Keep store scoping correct on every write.
 

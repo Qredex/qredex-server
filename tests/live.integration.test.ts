@@ -4,7 +4,6 @@ import { QredexClient } from "../src";
 
 const liveEnabled = process.env.QREDEX_LIVE_ENABLED === "1";
 const requiredEnv = [
-  "QREDEX_LIVE_BASE_URL",
   "QREDEX_LIVE_CLIENT_ID",
   "QREDEX_LIVE_CLIENT_SECRET",
   "QREDEX_LIVE_STORE_ID",
@@ -16,7 +15,15 @@ describe.skipIf(!liveEnabled || missingEnv.length > 0)(
   () => {
     it("runs the canonical integrations flow against a live API", async () => {
       const client = QredexClient.init({
-        baseUrl: process.env.QREDEX_LIVE_BASE_URL!,
+        environment:
+          process.env.QREDEX_LIVE_ENVIRONMENT === "staging"
+            ? "staging"
+            : process.env.QREDEX_LIVE_ENVIRONMENT === "development"
+              ? "development"
+              : "production",
+        ...(process.env.QREDEX_LIVE_BASE_URL
+          ? { baseUrl: process.env.QREDEX_LIVE_BASE_URL }
+          : {}),
         auth: {
           clientId: process.env.QREDEX_LIVE_CLIENT_ID!,
           clientSecret: process.env.QREDEX_LIVE_CLIENT_SECRET!,

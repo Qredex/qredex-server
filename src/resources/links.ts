@@ -6,6 +6,7 @@ import type {
   ListLinksRequest,
 } from "../models";
 import type { QredexCallOptions } from "../types";
+import { ValidationError } from "../errors";
 import { HttpClient } from "../internal/http-client";
 import {
   validateCreateLinkRequest,
@@ -20,7 +21,14 @@ export class LinksClient {
     request: CreateLinkRequest,
     options?: QredexCallOptions,
   ): Promise<LinkResponse> {
-    validateCreateLinkRequest(request);
+    try {
+      validateCreateLinkRequest(request);
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        return this.http.reportValidationFailure("links.create", error);
+      }
+      throw error;
+    }
     return this.http.request<LinkResponse>({
       method: "POST",
       path: "/api/v1/integrations/links",
@@ -33,7 +41,14 @@ export class LinksClient {
     request: GetLinkRequest,
     options?: QredexCallOptions,
   ): Promise<LinkResponse> {
-    validateGetLinkRequest(request);
+    try {
+      validateGetLinkRequest(request);
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        return this.http.reportValidationFailure("links.get", error);
+      }
+      throw error;
+    }
     return this.http.request<LinkResponse>({
       method: "GET",
       path: `/api/v1/integrations/links/${request.link_id}`,
@@ -45,7 +60,14 @@ export class LinksClient {
     request: ListLinksRequest = {},
     options?: QredexCallOptions,
   ): Promise<LinkPageResponse> {
-    validateListLinksRequest(request);
+    try {
+      validateListLinksRequest(request);
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        return this.http.reportValidationFailure("links.list", error);
+      }
+      throw error;
+    }
     return this.http.request<LinkPageResponse>({
       method: "GET",
       path: "/api/v1/integrations/links",

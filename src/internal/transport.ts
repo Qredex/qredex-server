@@ -1,12 +1,12 @@
 import { NetworkError, isQredexError } from "../errors";
 import type {
   FetchLike,
+  QredexClock,
   QredexCallOptions,
-  QredexDebugHook,
   QredexLogger,
 } from "../types";
 import { createApiError } from "./api-error-factory";
-import { emitDebugEvent } from "./debug";
+import { QredexEventBus } from "./event-bus";
 import { buildRequestContext } from "./request-context";
 import {
   appendQuery,
@@ -40,29 +40,32 @@ export interface TransportRequest {
 
 interface TransportOptions {
   baseUrl: string;
+  clock: QredexClock;
+  eventBus: QredexEventBus;
   fetch: FetchLike;
   timeoutMs: number;
   logger?: QredexLogger;
-  onDebug?: QredexDebugHook;
   defaultHeaders?: Record<string, string>;
   userAgentSuffix?: string;
 }
 
 export class Transport {
   private readonly baseUrl: string;
+  private readonly clock: QredexClock;
+  private readonly eventBus: QredexEventBus;
   private readonly fetchImplementation: FetchLike;
   private readonly timeoutMs: number;
   private readonly logger?: QredexLogger;
-  private readonly onDebug?: QredexDebugHook;
   private readonly defaultHeaders: Record<string, string>;
   private readonly userAgent: string;
 
   constructor(options: TransportOptions) {
     this.baseUrl = normalizeBaseUrl(options.baseUrl);
+    this.clock = options.clock;
+    this.eventBus = options.eventBus;
     this.fetchImplementation = options.fetch;
     this.timeoutMs = options.timeoutMs;
     this.logger = options.logger;
-    this.onDebug = options.onDebug;
     this.defaultHeaders = options.defaultHeaders ?? {};
     this.userAgent = options.userAgentSuffix
       ? `@qredex/sdk ${options.userAgentSuffix}`.trim()
@@ -72,7 +75,7 @@ export class Transport {
   async request<T>(request: TransportRequest): Promise<T> {
     const url = new URL(`${this.baseUrl}${request.path}`);
     appendQuery(url, request.query);
-    const context = buildRequestContext(this.timeoutMs, request.callOptions);
+    const context = buildRequestContext(this.timeoutMs, this.clock, request.callOptions);
 
     const headers = new Headers(this.defaultHeaders);
     headers.set("accept", "application/json");
@@ -126,7 +129,7 @@ export class Transport {
       }
     }
 
-    await emitDebugEvent(this.onDebug, this.logger, {
+    await this.eventBus.emit({
       type: "request",
       method: request.method,
       path: request.path,
@@ -138,8 +141,6 @@ export class Transport {
     const controller = new AbortController();
     const cleanupSignal = this.forwardAbort(context.signal, controller);
     const timeout = setTimeout(() => controller.abort(), context.timeoutMs);
-    const startedAt = Date.now();
-
     try {
       const response = await this.fetchImplementation(url, {
         method: request.method,
@@ -148,7 +149,7 @@ export class Transport {
         signal: controller.signal,
       });
 
-      const durationMs = Date.now() - startedAt;
+      const durationMs = this.clock.now() - context.startedAtMs;
       const responseText = await response.text();
       const responseBody = maybeParseJson(responseText);
       const requestId = pickFirstHeader(response.headers, [
@@ -182,7 +183,7 @@ export class Transport {
           status: response.status,
           traceId,
         });
-        await emitDebugEvent(this.onDebug, this.logger, {
+        await this.eventBus.emit({
           type: "response_error",
           durationMs,
           errorCode,
@@ -219,7 +220,7 @@ export class Transport {
         status: response.status,
         traceId,
       });
-      await emitDebugEvent(this.onDebug, this.logger, {
+      await this.eventBus.emit({
         type: "response",
         durationMs,
         method: request.method,
@@ -250,7 +251,7 @@ export class Transport {
         method: request.method,
         path: request.path,
       });
-      await emitDebugEvent(this.onDebug, this.logger, {
+      await this.eventBus.emit({
         type: "network_error",
         message,
         method: request.method,

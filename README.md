@@ -26,7 +26,6 @@ npm install @qredex/sdk
 import { QredexClient } from "@qredex/sdk";
 
 const client = QredexClient.init({
-  baseUrl: process.env.QREDEX_BASE_URL!,
   auth: {
     clientId: process.env.QREDEX_CLIENT_ID!,
     clientSecret: process.env.QREDEX_CLIENT_SECRET!,
@@ -49,7 +48,7 @@ const link = await client.links.create({
 ## Public API
 
 ```ts
-const client = QredexClient.init({ baseUrl, auth });
+const client = QredexClient.init({ auth });
 
 await client.auth.issueToken();
 
@@ -71,11 +70,16 @@ await client.refunds.recordRefund(request);
 ## Design Notes
 
 - Single configured client entrypoint.
+- Environment-first configuration with canonical host presets:
+  - `production` -> `https://api.qredex.com`
+  - `staging` -> `https://staging-api.qredex.com`
+  - `development` -> `http://localhost:8080`
 - Automatic client-credentials auth with in-memory token caching by default.
 - Request objects instead of long positional argument lists.
 - Typed Qredex error hierarchy preserving HTTP status, `error_code`, message, and request/trace IDs when available.
 - Transport stays internal; the public surface is curated and handwritten.
 - Request/response DTOs stay close to the Qredex API contract and preserve canonical field names like `token_integrity` and `integrity_reason`.
+- Typed client events and sanitized lifecycle hooks for observability without leaking secrets.
 
 ## Auth Behavior
 
@@ -83,7 +87,6 @@ Normal usage is automatic:
 
 ```ts
 const client = QredexClient.init({
-  baseUrl,
   auth: {
     clientId,
     clientSecret,
@@ -103,16 +106,93 @@ The SDK:
 - reuses cached tokens until they approach expiry
 - validates high-mistake request fields before sending them
 - never logs secrets or bearer tokens by default
-- supports custom token caches, logging hooks, sanitized `onDebug` events, timeout overrides, and explicit token issuance through `client.auth.issueToken()`
+- supports custom token caches, logging hooks, typed sanitized events, timeout overrides, and explicit token issuance through `client.auth.issueToken()`
 
-Example sanitized debug hook:
+## Environment Selection
+
+Production is the default, so most integrations do not need to pass any host configuration.
+
+```ts
+const productionClient = QredexClient.init({
+  auth: { clientId, clientSecret },
+});
+```
+
+Use presets when you need staging or local development:
+
+```ts
+const stagingClient = QredexClient.init({
+  environment: "staging",
+  auth: { clientId, clientSecret },
+});
+
+const developmentClient = QredexClient.init({
+  environment: "development",
+  auth: { clientId, clientSecret },
+});
+```
+
+`baseUrl` still exists as an advanced override for controlled testing, but it should not be the normal integration path.
+
+## Events And Observability
+
+You can observe sanitized lifecycle events with either `onEvent` or `client.events`.
 
 ```ts
 const client = QredexClient.init({
-  baseUrl,
   auth: { clientId, clientSecret },
-  onDebug(event) {
-    console.log(event.type, event.method, event.path, event.status);
+  onEvent(event) {
+    if (event.type === "response") {
+      console.log(event.type, event.method, event.path, event.status);
+    }
+  },
+});
+```
+
+```ts
+const unsubscribe = client.events.on("retry_scheduled", (event) => {
+  console.log(event.source, event.reason, event.attempt);
+});
+```
+
+Event types include:
+
+- `request`
+- `response`
+- `response_error`
+- `network_error`
+- `auth_token_issued`
+- `auth_cache_hit`
+- `auth_cache_miss`
+- `retry_scheduled`
+- `validation_failed`
+
+## Retry Behavior
+
+- Auth token issuance retries internally using the configured auth retry policy.
+- Normal API writes are not retried automatically.
+- Read retries are opt-in and only apply to `GET` and `HEAD`.
+
+```ts
+const client = QredexClient.init({
+  auth: { clientId, clientSecret },
+  readRetry: {
+    maxAttempts: 2,
+    baseDelayMs: 250,
+    maxDelayMs: 1_000,
+  },
+});
+```
+
+## Deterministic Testing
+
+You can inject a deterministic clock for auth timing and event assertions:
+
+```ts
+const client = QredexClient.init({
+  auth: { clientId, clientSecret },
+  clock: {
+    now: () => Date.parse("2026-03-15T12:00:00Z"),
   },
 });
 ```
