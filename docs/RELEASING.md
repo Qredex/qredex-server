@@ -57,7 +57,7 @@ Configure npm once for the package:
 
 1. Open the npm package settings for `@qredex/server`.
 2. Add a Trusted Publisher for this GitHub repository:
-   - repository: `Qredex/qredex-node`
+   - repository: `Qredex/qredex-server`
    - workflow file: `.github/workflows/publish-npm.yml`
    - branch: `main`
 3. Ensure GitHub Actions is enabled for the repository.

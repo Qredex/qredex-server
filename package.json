@@ -4,11 +4,11 @@
   "description": "Canonical Node.js server SDK for the Qredex Integrations API.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Qredex/qredex-node.git"
+    "url": "git+https://github.com/Qredex/qredex-server.git"
   },
-  "homepage": "https://github.com/Qredex/qredex-node#readme",
+  "homepage": "https://github.com/Qredex/qredex-server#readme",
   "bugs": {
-    "url": "https://github.com/Qredex/qredex-node/issues"
+    "url": "https://github.com/Qredex/qredex-server/issues"
   },
   "type": "module",
   "main": "./dist/index.cjs",

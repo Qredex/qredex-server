@@ -1,7 +1,7 @@
 # `@qredex/server`
 
-[![CI](https://github.com/Qredex/qredex-node/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Qredex/qredex-node/actions/workflows/ci.yml)
-[![Release](https://github.com/Qredex/qredex-node/actions/workflows/publish-npm.yml/badge.svg)](https://github.com/Qredex/qredex-node/actions/workflows/publish-npm.yml)
+[![CI](https://github.com/Qredex/qredex-server/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Qredex/qredex-server/actions/workflows/ci.yml)
+[![Release](https://github.com/Qredex/qredex-server/actions/workflows/publish-npm.yml/badge.svg)](https://github.com/Qredex/qredex-server/actions/workflows/publish-npm.yml)
 [![npm version](https://img.shields.io/npm/v/%40qredex%2Fserver.svg)](https://www.npmjs.com/package/@qredex/server)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/%40qredex%2Fserver)](https://bundlephobia.com/package/@qredex/server)
 [![license](https://img.shields.io/npm/l/%40qredex%2Fserver)](./LICENSE)
