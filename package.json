@@ -1,6 +1,6 @@
 {
   "name": "qredex",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Canonical Node.js server SDK for the Qredex Integrations API.",
   "repository": {
     "type": "git",
