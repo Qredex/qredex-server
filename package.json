@@ -39,6 +39,7 @@
     "build": "tsup",
     "clean": "rm -rf dist coverage",
     "release:check": "npm run typecheck && npm test && npm run build",
+    "release:version": "node ./scripts/release-version.mjs",
     "test": "vitest run",
     "test:live": "vitest run tests/live.integration.test.ts",
     "test:watch": "vitest",
@@ -54,7 +55,7 @@
     "integrations",
     "attribution"
   ],
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@types/node": "^24.0.0",
     "tsup": "^8.5.0",

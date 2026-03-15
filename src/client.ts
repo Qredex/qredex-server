@@ -52,6 +52,7 @@ export class Qredex {
   ): Qredex {
     const clientId = env.QREDEX_CLIENT_ID?.trim();
     const clientSecret = env.QREDEX_CLIENT_SECRET?.trim();
+    const rawScope = env.QREDEX_SCOPE?.trim();
     const rawEnvironment = env.QREDEX_ENVIRONMENT?.trim();
 
     if (!clientId) {
@@ -75,6 +76,13 @@ export class Qredex {
       rawEnvironment ??
       "production"
     ) as QredexOptions["environment"];
+    const scope = rawScope
+      ? rawScope
+          .split(/[\s,]+/)
+          .map((value) => value.trim())
+          .filter(Boolean)
+          .join(" ")
+      : undefined;
 
     return Qredex.init({
       ...overrides,
@@ -82,6 +90,7 @@ export class Qredex {
       auth: {
         clientId,
         clientSecret,
+        ...(scope ? { scope } : {}),
       },
     });
   }

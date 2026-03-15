@@ -26,7 +26,7 @@ const UUIDS = {
 };
 
 describe("Qredex", () => {
-  it("builds a client from environment variables", async () => {
+  it("builds a client from environment variables and forwards bootstrap scope", async () => {
     const { calls, fetch } = createFetchMock([
       jsonResponse(200, {
         access_token: "env-token",
@@ -45,6 +45,7 @@ describe("Qredex", () => {
     const client = Qredex.bootstrap({
       QREDEX_CLIENT_ID: "env-client",
       QREDEX_CLIENT_SECRET: "env-secret",
+      QREDEX_SCOPE: "direct:creators:read direct:links:read",
       QREDEX_ENVIRONMENT: "staging",
     }, {
       fetch,
@@ -53,6 +54,9 @@ describe("Qredex", () => {
     await client.creators.list();
 
     expect(String(calls[0]!.input)).toBe("https://staging-api.qredex.com/api/v1/auth/token");
+    expect(getBodyText(calls[0]!)).toBe(
+      "grant_type=client_credentials&scope=direct%3Acreators%3Aread+direct%3Alinks%3Aread",
+    );
     expect(String(calls[1]!.input)).toBe("https://staging-api.qredex.com/api/v1/integrations/creators");
   });
 

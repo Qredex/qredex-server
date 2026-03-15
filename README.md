@@ -1,18 +1,13 @@
 # `qredex`
 
-Canonical Node.js server SDK for the Qredex Integrations API.
+[![CI](https://github.com/Qredex/qredex-node/actions/workflows/ci.yml/badge.svg)](https://github.com/Qredex/qredex-node/actions/workflows/ci.yml)
+[![Publish](https://github.com/Qredex/qredex-node/actions/workflows/publish.yml/badge.svg)](https://github.com/Qredex/qredex-node/actions/workflows/publish.yml)
+[![npm version](https://img.shields.io/npm/v/qredex)](https://www.npmjs.com/package/qredex)
+[![License](https://img.shields.io/npm/l/qredex)](./LICENSE)
 
-This package is for machine-to-machine integrations only. It covers:
+Canonical Node.js server SDK for Qredex machine-to-machine integrations.
 
-- `POST /api/v1/auth/token`
-- `/api/v1/integrations/creators/**`
-- `/api/v1/integrations/links/**`
-- `/api/v1/integrations/intents/token`
-- `/api/v1/integrations/intents/lock`
-- `POST /api/v1/integrations/orders/paid`
-- `POST /api/v1/integrations/orders/refund`
-
-It does not include merchant dashboard APIs, internal APIs, Shopify OAuth/session exchange, or browser agent behavior.
+`qredex` is built for backend systems that need to create creators and links, issue IITs, lock PITs, and record paid orders and refunds without dealing with raw HTTP plumbing.
 
 ## Install
 
@@ -21,6 +16,15 @@ npm install qredex
 ```
 
 ## Quick Start
+
+Set:
+
+- `QREDEX_CLIENT_ID`
+- `QREDEX_CLIENT_SECRET`
+- `QREDEX_SCOPE` optional
+- `QREDEX_ENVIRONMENT` optional, defaults to `production`
+
+Then use the SDK:
 
 ```ts
 import { Qredex } from "qredex";
@@ -39,6 +43,15 @@ const link = await qredex.links.create({
   destination_path: "/products/spring-launch",
 });
 ```
+
+## Why This SDK
+
+- automatic client-credentials auth with token caching
+- request objects instead of long parameter lists
+- typed responses that preserve canonical Qredex field names
+- typed errors with `status`, `error_code`, `requestId`, and `traceId`
+- sanitized SDK events for observability without leaking secrets
+- deterministic behavior aligned with the canonical IIT -> PIT -> order -> refund flow
 
 ## Public API
 
@@ -60,7 +73,25 @@ await qredex.orders.recordPaidOrder(request);
 await qredex.refunds.recordRefund(request);
 ```
 
-If you want explicit auth observability, you can issue a token directly on the same instance:
+If you want programmatic configuration instead of environment bootstrap:
+
+```ts
+const qredex = Qredex.init({
+  environment: "staging",
+  auth: {
+    clientId: process.env.QREDEX_CLIENT_ID!,
+    clientSecret: process.env.QREDEX_CLIENT_SECRET!,
+  },
+});
+```
+
+## Environment Model
+
+Use `QREDEX_ENVIRONMENT` only when you need `staging` or `development`. Most integrations can omit it and stay on the default `production` environment.
+
+## Auth And Observability
+
+Normal auth is automatic. If you want to observe or preflight token issuance explicitly, do it on the same `qredex` instance:
 
 ```ts
 const qredex = Qredex.bootstrap();
@@ -68,108 +99,22 @@ const qredex = Qredex.bootstrap();
 await qredex.auth.issueToken();
 ```
 
-## Design Notes
+If you want bootstrap to request specific scopes, set `QREDEX_SCOPE` as a space-delimited list:
 
-- Single configured client entrypoint.
-- Environment-first configuration with canonical host presets:
-  - `production` -> `https://api.qredex.com`
-  - `staging` -> `https://staging-api.qredex.com`
-  - `development` -> `http://localhost:8080`
-- Automatic client-credentials auth with in-memory token caching by default.
-- Request objects instead of long positional argument lists.
-- Typed Qredex error hierarchy preserving HTTP status, `error_code`, message, and request/trace IDs when available.
-- Transport stays internal; the public surface is curated and handwritten.
-- Request/response DTOs stay close to the Qredex API contract and preserve canonical field names like `token_integrity` and `integrity_reason`.
-- Typed client events and sanitized lifecycle hooks for observability without leaking secrets.
-
-## Auth Behavior
-
-Normal usage is automatic:
-
-```ts
-const qredex = Qredex.init({
-  auth: {
-    clientId,
-    clientSecret,
-    scope: [
-      "direct:creators:write",
-      "direct:links:write",
-      "direct:intents:write",
-      "direct:orders:write",
-    ],
-  },
-});
+```bash
+export QREDEX_SCOPE="direct:creators:write direct:links:write"
 ```
 
-The SDK:
-
-- issues access tokens through `/api/v1/auth/token`
-- reuses cached tokens until they approach expiry
-- validates high-mistake request fields before sending them
-- never logs secrets or bearer tokens by default
-- supports custom token caches, logging hooks, typed sanitized events, timeout overrides, and explicit token issuance through `qredex.auth.issueToken()`
-
-## Environment Bootstrap
-
-You can bootstrap the SDK directly from process environment:
-
-```ts
-const qredex = Qredex.bootstrap();
-```
-
-`Qredex.bootstrap()` reads:
-
-- `QREDEX_CLIENT_ID`
-- `QREDEX_CLIENT_SECRET`
-- `QREDEX_ENVIRONMENT` optional
-
-Behavior:
-
-- `QREDEX_CLIENT_ID` and `QREDEX_CLIENT_SECRET` are required
-- `QREDEX_ENVIRONMENT` defaults to `production`
-
-## Environment Selection
-
-Production is the default, so most integrations do not need to pass any host configuration.
-
-```ts
-const qredex = Qredex.init({
-  auth: { clientId, clientSecret },
-});
-```
-
-Use presets when you need staging or local development:
-
-```ts
-const stagingQredex = Qredex.init({
-  environment: "staging",
-  auth: { clientId, clientSecret },
-});
-
-const developmentQredex = Qredex.init({
-  environment: "development",
-  auth: { clientId, clientSecret },
-});
-```
-
-## Events And Observability
-
-You can observe sanitized lifecycle events with either `onEvent` or `qredex.events`.
+You can also subscribe to sanitized events:
 
 ```ts
 const qredex = Qredex.init({
   auth: { clientId, clientSecret },
   onEvent(event) {
     if (event.type === "response") {
-      console.log(event.type, event.method, event.path, event.status);
+      console.log(event.method, event.path, event.status);
     }
   },
-});
-```
-
-```ts
-const unsubscribe = qredex.events.on("retry_scheduled", (event) => {
-  console.log(event.source, event.reason, event.attempt);
 });
 ```
 
@@ -187,9 +132,9 @@ Event types include:
 
 ## Retry Behavior
 
-- Auth token issuance retries internally using the configured auth retry policy.
-- Normal API writes are not retried automatically.
-- Read retries are opt-in and only apply to `GET` and `HEAD`.
+- auth token issuance retries internally
+- read retries are opt-in and apply only to `GET` and `HEAD`
+- writes are not retried automatically
 
 ```ts
 const qredex = Qredex.init({
@@ -202,54 +147,39 @@ const qredex = Qredex.init({
 });
 ```
 
-## Deterministic Testing
-
-You can inject a deterministic clock for auth timing and event assertions:
-
-```ts
-const qredex = Qredex.init({
-  auth: { clientId, clientSecret },
-  clock: {
-    now: () => Date.parse("2026-03-15T12:00:00Z"),
-  },
-});
-```
-
 ## Canonical Flow
 
-1. Authenticate with client credentials.
-2. Create or fetch creators.
-3. Create or fetch links.
-4. Issue IIT for backend click flows.
-5. Lock PIT for authenticated machine flows.
-6. Record the paid order.
-7. Record refunds later with stable external refund IDs.
+1. Create or fetch creators.
+2. Create or fetch links.
+3. Issue IIT.
+4. Lock PIT.
+5. Record the paid order.
+6. Record refunds later with stable external refund IDs.
 
-See [docs/INTEGRATION_GUIDE.md](./docs/INTEGRATION_GUIDE.md) for the full flow, [docs/GOLDEN_PATH.md](./docs/GOLDEN_PATH.md) for the merchant adoption path, and [docs/ERRORS.md](./docs/ERRORS.md) for failure handling.
+## Docs
 
-## Testing
-
-- `npm test` runs unit tests with mocked transport
-- `npm test` also runs local mock-server integration tests over real HTTP
-- `npm run test:live` runs the opt-in live integration suite in `tests/live.integration.test.ts`
-
-Live tests are skipped unless `QREDEX_LIVE_ENABLED=1` and the required `QREDEX_LIVE_*` environment variables are set.
-
-To target staging, set `QREDEX_LIVE_ENVIRONMENT=staging` before `npm run test:live`.
-
-## Releasing
-
-See [docs/RELEASING.md](./docs/RELEASING.md) for the release checklist and publish flow.
-
-## Support
-
-See [docs/SUPPORT_POLICY.md](./docs/SUPPORT_POLICY.md) for supported Node versions, semver expectations, deprecation policy, and environment support.
+- [Integration Guide](./docs/INTEGRATION_GUIDE.md)
+- [Golden Path](./docs/GOLDEN_PATH.md)
+- [Error Handling](./docs/ERRORS.md)
+- [Support Policy](./docs/SUPPORT_POLICY.md)
+- [Release Guide](./docs/RELEASING.md)
 
 ## Examples
 
-- [examples/auth-and-create-creator.ts](./examples/auth-and-create-creator.ts)
-- [examples/create-link.ts](./examples/create-link.ts)
-- [examples/issue-iit.ts](./examples/issue-iit.ts)
-- [examples/lock-pit.ts](./examples/lock-pit.ts)
-- [examples/record-paid-order.ts](./examples/record-paid-order.ts)
-- [examples/record-refund.ts](./examples/record-refund.ts)
+- [auth-and-create-creator.ts](./examples/auth-and-create-creator.ts)
+- [create-link.ts](./examples/create-link.ts)
+- [issue-iit.ts](./examples/issue-iit.ts)
+- [lock-pit.ts](./examples/lock-pit.ts)
+- [record-paid-order.ts](./examples/record-paid-order.ts)
+- [record-refund.ts](./examples/record-refund.ts)
+
+## Testing
+
+- `npm test` runs unit tests and local mock-server HTTP integration tests
+- `npm run test:live` runs the opt-in live integration suite
+
+Live tests are skipped unless `QREDEX_LIVE_ENABLED=1` and the required `QREDEX_LIVE_*` variables are set.
+
+## License
+
+[Apache-2.0](./LICENSE)

@@ -8,6 +8,7 @@
 
 - `QREDEX_CLIENT_ID`
 - `QREDEX_CLIENT_SECRET`
+- optional `QREDEX_SCOPE`
 - `QREDEX_STORE_ID` for link/order/refund calls
 - optional `QREDEX_ENVIRONMENT`:
   - `production` (default)
@@ -22,13 +23,7 @@ import { Qredex } from "qredex";
 export const qredex = Qredex.bootstrap();
 ```
 
-Canonical host presets are built in:
-
-- `production` -> `https://api.qredex.com`
-- `staging` -> `https://staging-api.qredex.com`
-- `development` -> `http://localhost:8080`
-
-`Qredex.bootstrap()` reads `QREDEX_CLIENT_ID`, `QREDEX_CLIENT_SECRET`, and optional `QREDEX_ENVIRONMENT`.
+`Qredex.bootstrap()` reads `QREDEX_CLIENT_ID`, `QREDEX_CLIENT_SECRET`, optional `QREDEX_SCOPE`, and optional `QREDEX_ENVIRONMENT`.
 
 ## 2. Creator Setup
 
