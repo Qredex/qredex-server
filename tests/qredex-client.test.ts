@@ -6,7 +6,6 @@ import {
   ConflictError,
   NetworkError,
   Qredex,
-  QredexClient,
   ValidationError as QredexValidationError,
   ValidationError,
 } from "../src";
@@ -27,10 +26,6 @@ const UUIDS = {
 };
 
 describe("Qredex", () => {
-  it("keeps QredexClient as a compatibility alias", () => {
-    expect(QredexClient).toBe(Qredex);
-  });
-
   it("issues tokens with client credentials and reuses the cached token for creator writes", async () => {
     const { calls, fetch } = createFetchMock([
       jsonResponse(200, {

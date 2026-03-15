@@ -174,7 +174,7 @@ export interface QredexCallOptions {
   headers?: Record<string, string>;
 }
 
-export interface QredexClientOptions {
+export interface QredexOptions {
   baseUrl?: string;
   environment?: QredexEnvironment;
   auth: QredexAuthOptions;
@@ -188,5 +188,3 @@ export interface QredexClientOptions {
   defaultHeaders?: Record<string, string>;
   userAgentSuffix?: string;
 }
-
-export type QredexOptions = QredexClientOptions;

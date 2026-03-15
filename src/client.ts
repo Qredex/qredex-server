@@ -4,8 +4,8 @@ import type { OAuthTokenResponse } from "./types";
 import type {
   IssueTokenRequest,
   QredexCallOptions,
-  QredexClientOptions,
   QredexClock,
+  QredexOptions,
 } from "./types";
 import { QredexEventBus } from "./internal/event-bus";
 import { HttpClient } from "./internal/http-client";
@@ -42,11 +42,11 @@ export class Qredex {
   readonly orders: OrdersClient;
   readonly refunds: RefundsClient;
 
-  static init(options: QredexClientOptions): Qredex {
+  static init(options: QredexOptions): Qredex {
     return new Qredex(options);
   }
 
-  private constructor(options: QredexClientOptions) {
+  private constructor(options: QredexOptions) {
     const clock: QredexClock = options.clock ?? {
       now: () => Date.now(),
     };
@@ -94,8 +94,3 @@ export class Qredex {
     this.refunds = new RefundsClient(http);
   }
 }
-
-/**
- * @deprecated Use `Qredex` instead.
- */
-export const QredexClient = Qredex;

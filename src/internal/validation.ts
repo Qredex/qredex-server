@@ -11,7 +11,7 @@ import type {
   RecordPaidOrderRequest,
   RecordRefundRequest,
 } from "../models";
-import type { QredexClientOptions, QredexEnvironment } from "../types";
+import type { QredexEnvironment, QredexOptions } from "../types";
 import { normalizeBaseUrl } from "./utils";
 
 const ALLOWED_ATTRIBUTION_WINDOWS = new Set([1, 3, 7, 14, 30]);
@@ -91,7 +91,7 @@ function assertOptionalPageSize(field: string, value: unknown): void {
   }
 }
 
-export function resolveClientBaseUrl(options: QredexClientOptions): string {
+export function resolveClientBaseUrl(options: QredexOptions): string {
   const baseUrl = options.baseUrl ?? ENVIRONMENT_BASE_URLS[options.environment ?? "production"];
 
   let url: URL;
