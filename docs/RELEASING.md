@@ -16,8 +16,8 @@
    - `npm run test:live`
 4. Inspect the publish tarball:
    - `npm pack --dry-run`
-5. Update [`CHANGELOG.md`](/Users/bobai/Workspace/Qredex/qredex-node/CHANGELOG.md).
-6. Bump the package version in [`package.json`](/Users/bobai/Workspace/Qredex/qredex-node/package.json).
+5. Update [`CHANGELOG.md`](../CHANGELOG.md).
+6. Bump the package version in [`package.json`](../package.json).
 7. Publish:
    - `npm publish`
 

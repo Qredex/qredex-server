@@ -207,12 +207,12 @@ const client = QredexClient.init({
 6. Record the paid order.
 7. Record refunds later with stable external refund IDs.
 
-See [docs/INTEGRATION_GUIDE.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/INTEGRATION_GUIDE.md) for the full flow, [docs/GOLDEN_PATH.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/GOLDEN_PATH.md) for the merchant adoption path, and [docs/ERRORS.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/ERRORS.md) for failure handling.
+See [docs/INTEGRATION_GUIDE.md](./docs/INTEGRATION_GUIDE.md) for the full flow, [docs/GOLDEN_PATH.md](./docs/GOLDEN_PATH.md) for the merchant adoption path, and [docs/ERRORS.md](./docs/ERRORS.md) for failure handling.
 
 ## Testing
 
 - `npm test` runs unit tests with mocked transport
-- `npm run test:live` runs the opt-in live integration suite in [`tests/live.integration.test.ts`](/Users/bobai/Workspace/Qredex/qredex-node/tests/live.integration.test.ts)
+- `npm run test:live` runs the opt-in live integration suite in `tests/live.integration.test.ts`
 
 Live tests are skipped unless `QREDEX_LIVE_ENABLED=1` and the required `QREDEX_LIVE_*` environment variables are set.
 
@@ -220,17 +220,17 @@ To target staging, set `QREDEX_LIVE_ENVIRONMENT=staging` before `npm run test:li
 
 ## Releasing
 
-See [docs/RELEASING.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/RELEASING.md) for the release checklist and publish flow.
+See [docs/RELEASING.md](./docs/RELEASING.md) for the release checklist and publish flow.
 
 ## Support
 
-See [docs/SUPPORT_POLICY.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/SUPPORT_POLICY.md) for supported Node versions, semver expectations, deprecation policy, and environment support.
+See [docs/SUPPORT_POLICY.md](./docs/SUPPORT_POLICY.md) for supported Node versions, semver expectations, deprecation policy, and environment support.
 
 ## Examples
 
-- [examples/auth-and-create-creator.ts](/Users/bobai/Workspace/Qredex/qredex-node/examples/auth-and-create-creator.ts)
-- [examples/create-link.ts](/Users/bobai/Workspace/Qredex/qredex-node/examples/create-link.ts)
-- [examples/issue-iit.ts](/Users/bobai/Workspace/Qredex/qredex-node/examples/issue-iit.ts)
-- [examples/lock-pit.ts](/Users/bobai/Workspace/Qredex/qredex-node/examples/lock-pit.ts)
-- [examples/record-paid-order.ts](/Users/bobai/Workspace/Qredex/qredex-node/examples/record-paid-order.ts)
-- [examples/record-refund.ts](/Users/bobai/Workspace/Qredex/qredex-node/examples/record-refund.ts)
+- [examples/auth-and-create-creator.ts](./examples/auth-and-create-creator.ts)
+- [examples/create-link.ts](./examples/create-link.ts)
+- [examples/issue-iit.ts](./examples/issue-iit.ts)
+- [examples/lock-pit.ts](./examples/lock-pit.ts)
+- [examples/record-paid-order.ts](./examples/record-paid-order.ts)
+- [examples/record-refund.ts](./examples/record-refund.ts)

@@ -8,7 +8,7 @@
 - Node.js `20.x`
 - Node.js `22.x`
 
-The package currently declares [`"node": ">=18"`](/Users/bobai/Workspace/Qredex/qredex-node/package.json), and Node `18+` is the supported runtime floor.
+The package currently declares [`"node": ">=18"`](../package.json), and Node `18+` is the supported runtime floor.
 
 ## Environment Support
 
