@@ -2,6 +2,14 @@
   "name": "@qredex/node",
   "version": "0.1.0",
   "description": "Canonical Node.js server SDK for the Qredex Integrations API.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Qredex/qredex-node.git"
+  },
+  "homepage": "https://github.com/Qredex/qredex-node#readme",
+  "bugs": {
+    "url": "https://github.com/Qredex/qredex-node/issues"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -17,20 +25,26 @@
     "dist",
     "docs",
     "examples",
+    "CHANGELOG.md",
     "README.md"
   ],
   "sideEffects": false,
   "engines": {
     "node": ">=18"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "clean": "rm -rf dist coverage",
+    "release:check": "npm run typecheck && npm test && npm run build",
     "test": "vitest run",
     "test:live": "vitest run tests/live.integration.test.ts",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run release:check"
   },
   "keywords": [
     "qredex",

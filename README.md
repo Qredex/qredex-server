@@ -216,6 +216,12 @@ See [docs/INTEGRATION_GUIDE.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/I
 
 Live tests are skipped unless `QREDEX_LIVE_ENABLED=1` and the required `QREDEX_LIVE_*` environment variables are set.
 
+To target staging, set `QREDEX_LIVE_ENVIRONMENT=staging` before `npm run test:live`.
+
+## Releasing
+
+See [docs/RELEASING.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/RELEASING.md) for the release checklist and publish flow.
+
 ## Examples
 
 - [examples/auth-and-create-creator.ts](/Users/bobai/Workspace/Qredex/qredex-node/examples/auth-and-create-creator.ts)
