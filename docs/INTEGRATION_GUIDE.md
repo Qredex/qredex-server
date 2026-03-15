@@ -19,7 +19,7 @@
 ```ts
 import { Qredex } from "qredex";
 
-export const client = Qredex.fromEnv();
+export const client = Qredex.bootstrap();
 ```
 
 Canonical host presets are built in:
@@ -28,7 +28,7 @@ Canonical host presets are built in:
 - `staging` -> `https://staging-api.qredex.com`
 - `development` -> `http://localhost:8080`
 
-`Qredex.fromEnv()` reads `QREDEX_CLIENT_ID`, `QREDEX_CLIENT_SECRET`, and optional `QREDEX_ENVIRONMENT`.
+`Qredex.bootstrap()` reads `QREDEX_CLIENT_ID`, `QREDEX_CLIENT_SECRET`, and optional `QREDEX_ENVIRONMENT`.
 
 ## 2. Creator Setup
 

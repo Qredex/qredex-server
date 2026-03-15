@@ -25,7 +25,7 @@ npm install qredex
 ```ts
 import { Qredex } from "qredex";
 
-const client = Qredex.fromEnv();
+const client = Qredex.bootstrap();
 
 const creator = await client.creators.create({
   handle: "alice",
@@ -44,7 +44,7 @@ const link = await client.links.create({
 
 ```ts
 const client = Qredex.init({ auth });
-const envClient = Qredex.fromEnv();
+const envClient = Qredex.bootstrap();
 
 await client.auth.issueToken();
 
@@ -109,10 +109,10 @@ The SDK:
 You can bootstrap the SDK directly from process environment:
 
 ```ts
-const qredex = Qredex.fromEnv();
+const qredex = Qredex.bootstrap();
 ```
 
-`Qredex.fromEnv()` reads:
+`Qredex.bootstrap()` reads:
 
 - `QREDEX_CLIENT_ID`
 - `QREDEX_CLIENT_SECRET`

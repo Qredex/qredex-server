@@ -46,7 +46,7 @@ export class Qredex {
     return new Qredex(options);
   }
 
-  static fromEnv(
+  static bootstrap(
     env: NodeJS.ProcessEnv = process.env,
     overrides: Omit<QredexOptions, "auth" | "environment"> = {},
   ): Qredex {
@@ -55,11 +55,11 @@ export class Qredex {
     const rawEnvironment = env.QREDEX_ENVIRONMENT?.trim();
 
     if (!clientId) {
-      throw new ConfigurationError("Qredex.fromEnv requires QREDEX_CLIENT_ID.");
+      throw new ConfigurationError("Qredex.bootstrap requires QREDEX_CLIENT_ID.");
     }
 
     if (!clientSecret) {
-      throw new ConfigurationError("Qredex.fromEnv requires QREDEX_CLIENT_SECRET.");
+      throw new ConfigurationError("Qredex.bootstrap requires QREDEX_CLIENT_SECRET.");
     }
 
     if (
@@ -67,7 +67,7 @@ export class Qredex {
       !["production", "staging", "development"].includes(rawEnvironment)
     ) {
       throw new ConfigurationError(
-        "Qredex.fromEnv requires QREDEX_ENVIRONMENT to be 'production', 'staging', or 'development'.",
+        "Qredex.bootstrap requires QREDEX_ENVIRONMENT to be 'production', 'staging', or 'development'.",
       );
     }
 

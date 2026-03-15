@@ -42,7 +42,7 @@ describe("Qredex", () => {
       }),
     ]);
 
-    const client = Qredex.fromEnv({
+    const client = Qredex.bootstrap({
       QREDEX_CLIENT_ID: "env-client",
       QREDEX_CLIENT_SECRET: "env-secret",
       QREDEX_ENVIRONMENT: "staging",
@@ -56,7 +56,7 @@ describe("Qredex", () => {
     expect(String(calls[1]!.input)).toBe("https://staging-api.qredex.com/api/v1/integrations/creators");
   });
 
-  it("defaults fromEnv to production when QREDEX_ENVIRONMENT is omitted", async () => {
+  it("defaults bootstrap to production when QREDEX_ENVIRONMENT is omitted", async () => {
     const { calls, fetch } = createFetchMock([
       jsonResponse(200, {
         access_token: "env-token",
@@ -72,7 +72,7 @@ describe("Qredex", () => {
       }),
     ]);
 
-    const client = Qredex.fromEnv({
+    const client = Qredex.bootstrap({
       QREDEX_CLIENT_ID: "env-client",
       QREDEX_CLIENT_SECRET: "env-secret",
     }, {
@@ -85,26 +85,26 @@ describe("Qredex", () => {
     expect(String(calls[1]!.input)).toBe("https://api.qredex.com/api/v1/integrations/creators");
   });
 
-  it("fails fast when fromEnv is missing required credentials", () => {
-    expect(() => Qredex.fromEnv({})).toThrowError(
-      "Qredex.fromEnv requires QREDEX_CLIENT_ID.",
+  it("fails fast when bootstrap is missing required credentials", () => {
+    expect(() => Qredex.bootstrap({})).toThrowError(
+      "Qredex.bootstrap requires QREDEX_CLIENT_ID.",
     );
     expect(() =>
-      Qredex.fromEnv({
+      Qredex.bootstrap({
         QREDEX_CLIENT_ID: "env-client",
       }))
-      .toThrowError("Qredex.fromEnv requires QREDEX_CLIENT_SECRET.");
+      .toThrowError("Qredex.bootstrap requires QREDEX_CLIENT_SECRET.");
   });
 
-  it("fails fast when fromEnv receives an invalid environment", () => {
+  it("fails fast when bootstrap receives an invalid environment", () => {
     expect(() =>
-      Qredex.fromEnv({
+      Qredex.bootstrap({
         QREDEX_CLIENT_ID: "env-client",
         QREDEX_CLIENT_SECRET: "env-secret",
         QREDEX_ENVIRONMENT: "sandbox",
       }),
     ).toThrowError(
-      "Qredex.fromEnv requires QREDEX_ENVIRONMENT to be 'production', 'staging', or 'development'.",
+      "Qredex.bootstrap requires QREDEX_ENVIRONMENT to be 'production', 'staging', or 'development'.",
     );
   });
 
