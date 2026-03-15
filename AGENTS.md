@@ -53,7 +53,8 @@ Treat these as authoritative and align implementation to them:
 - `docs/attribution/ATTRIBUTION_MODEL.md`
 - `docs/openapi/qredex-api-v1.openapi.yaml`
 
-If docs conflict, stop and surface the conflict clearly before proceeding.
+If docs conflict in a way that blocks safe implementation, stop and surface the conflict clearly before proceeding.
+If the broader authoritative docs establish a clear canonical direction and one artifact appears stale, proceed narrowly, document the drift, and avoid inventing new behavior.
 
 ---
 
@@ -185,10 +186,12 @@ The public SDK surface must be handwritten and curated, even if transport is gen
 Example shape:
 
 ```ts
-const client = new QredexClient({
+const client = QredexClient.init({
   baseUrl,
-  clientId,
-  clientSecret,
+  auth: {
+    clientId,
+    clientSecret,
+  },
 });
 
 await client.creators.create({...});
@@ -214,10 +217,17 @@ if (response.successfulAttribution) { ... }
 
 Good:
 ```ts
-response.resolutionStatus
-response.tokenIntegrity
-response.integrityReason
+response.resolution_status
+response.token_integrity
+response.integrity_reason
 ```
+
+### Idempotency And Outcome Rules
+
+- Do not collapse ingestion outcomes into generic success booleans.
+- Preserve canonical Qredex outcomes such as `INGESTED`, `IDEMPOTENT`, `REJECTED_SOURCE_POLICY`, and `REJECTED_CROSS_SOURCE_DUPLICATE`.
+- Treat these as platform facts that must remain visible in SDK responses and docs where applicable.
+- Prefer explicit outcome fields and documented caller behavior over convenience abstractions that hide replay semantics.
 
 ---
 
