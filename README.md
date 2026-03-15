@@ -25,14 +25,14 @@ npm install qredex
 ```ts
 import { Qredex } from "qredex";
 
-const client = Qredex.bootstrap();
+const qredex = Qredex.bootstrap();
 
-const creator = await client.creators.create({
+const creator = await qredex.creators.create({
   handle: "alice",
   display_name: "Alice",
 });
 
-const link = await client.links.create({
+const link = await qredex.links.create({
   store_id: process.env.QREDEX_STORE_ID!,
   creator_id: creator.id,
   link_name: "spring-launch",
@@ -43,24 +43,29 @@ const link = await client.links.create({
 ## Public API
 
 ```ts
-const client = Qredex.init({ auth });
-const envClient = Qredex.bootstrap();
+const qredex = Qredex.bootstrap();
 
-await client.auth.issueToken();
+await qredex.creators.create(request);
+await qredex.creators.get({ creator_id });
+await qredex.creators.list(filters);
 
-await client.creators.create(request);
-await client.creators.get({ creator_id });
-await client.creators.list(filters);
+await qredex.links.create(request);
+await qredex.links.get({ link_id });
+await qredex.links.list(filters);
 
-await client.links.create(request);
-await client.links.get({ link_id });
-await client.links.list(filters);
+await qredex.intents.issueInfluenceIntentToken(request);
+await qredex.intents.lockPurchaseIntent(request);
 
-await client.intents.issueInfluenceIntentToken(request);
-await client.intents.lockPurchaseIntent(request);
+await qredex.orders.recordPaidOrder(request);
+await qredex.refunds.recordRefund(request);
+```
 
-await client.orders.recordPaidOrder(request);
-await client.refunds.recordRefund(request);
+If you want explicit auth observability, you can issue a token directly on the same instance:
+
+```ts
+const qredex = Qredex.bootstrap();
+
+await qredex.auth.issueToken();
 ```
 
 ## Design Notes
@@ -82,7 +87,7 @@ await client.refunds.recordRefund(request);
 Normal usage is automatic:
 
 ```ts
-const client = Qredex.init({
+const qredex = Qredex.init({
   auth: {
     clientId,
     clientSecret,
@@ -102,7 +107,7 @@ The SDK:
 - reuses cached tokens until they approach expiry
 - validates high-mistake request fields before sending them
 - never logs secrets or bearer tokens by default
-- supports custom token caches, logging hooks, typed sanitized events, timeout overrides, and explicit token issuance through `client.auth.issueToken()`
+- supports custom token caches, logging hooks, typed sanitized events, timeout overrides, and explicit token issuance through `qredex.auth.issueToken()`
 
 ## Environment Bootstrap
 
@@ -128,7 +133,7 @@ Behavior:
 Production is the default, so most integrations do not need to pass any host configuration.
 
 ```ts
-const productionClient = Qredex.init({
+const qredex = Qredex.init({
   auth: { clientId, clientSecret },
 });
 ```
@@ -136,12 +141,12 @@ const productionClient = Qredex.init({
 Use presets when you need staging or local development:
 
 ```ts
-const stagingClient = Qredex.init({
+const stagingQredex = Qredex.init({
   environment: "staging",
   auth: { clientId, clientSecret },
 });
 
-const developmentClient = Qredex.init({
+const developmentQredex = Qredex.init({
   environment: "development",
   auth: { clientId, clientSecret },
 });
@@ -149,10 +154,10 @@ const developmentClient = Qredex.init({
 
 ## Events And Observability
 
-You can observe sanitized lifecycle events with either `onEvent` or `client.events`.
+You can observe sanitized lifecycle events with either `onEvent` or `qredex.events`.
 
 ```ts
-const client = Qredex.init({
+const qredex = Qredex.init({
   auth: { clientId, clientSecret },
   onEvent(event) {
     if (event.type === "response") {
@@ -163,7 +168,7 @@ const client = Qredex.init({
 ```
 
 ```ts
-const unsubscribe = client.events.on("retry_scheduled", (event) => {
+const unsubscribe = qredex.events.on("retry_scheduled", (event) => {
   console.log(event.source, event.reason, event.attempt);
 });
 ```
@@ -187,7 +192,7 @@ Event types include:
 - Read retries are opt-in and only apply to `GET` and `HEAD`.
 
 ```ts
-const client = Qredex.init({
+const qredex = Qredex.init({
   auth: { clientId, clientSecret },
   readRetry: {
     maxAttempts: 2,
@@ -202,7 +207,7 @@ const client = Qredex.init({
 You can inject a deterministic clock for auth timing and event assertions:
 
 ```ts
-const client = Qredex.init({
+const qredex = Qredex.init({
   auth: { clientId, clientSecret },
   clock: {
     now: () => Date.parse("2026-03-15T12:00:00Z"),

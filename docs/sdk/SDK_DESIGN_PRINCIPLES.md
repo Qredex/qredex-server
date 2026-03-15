@@ -40,7 +40,7 @@ The SDK should feel:
 Expose one configured client as the main entrypoint:
 
 ```ts
-const client = Qredex.init({
+const qredex = Qredex.init({
   auth: { clientId, clientSecret },
 });
 ```
@@ -71,11 +71,11 @@ Avoid exposing multiple equivalent construction styles.
 
 Organize methods by domain:
 
-- `client.creators`
-- `client.links`
-- `client.intents`
-- `client.orders`
-- `client.refunds`
+- `qredex.creators`
+- `qredex.links`
+- `qredex.intents`
+- `qredex.orders`
+- `qredex.refunds`
 
 This mirrors API zoning and keeps the mental model stable.
 
@@ -86,7 +86,7 @@ Every operation should accept a typed request object.
 Good:
 
 ```ts
-await client.links.create({
+await qredex.links.create({
   store_id,
   creator_id,
   link_name,
@@ -107,7 +107,7 @@ This improves maintainability without expanding the public API.
 Expose sanitized SDK lifecycle events through:
 
 - `onEvent`
-- `client.events`
+- `qredex.events`
 
 This is the preferred observability pattern for the SDK.
 
@@ -120,7 +120,7 @@ Avoid generic middleware or interceptor stacks as the default extension model.
 The recommended public shape is:
 
 ```ts
-const client = Qredex.init({
+const qredex = Qredex.init({
   environment: "production",
   auth: {
     clientId,
@@ -128,22 +128,22 @@ const client = Qredex.init({
   },
 });
 
-await client.auth.issueToken();
-await client.auth.clearTokenCache();
+await qredex.auth.issueToken();
+await qredex.auth.clearTokenCache();
 
-await client.creators.create(request, callOptions);
-await client.creators.get({ creator_id }, callOptions);
-await client.creators.list(filters, callOptions);
+await qredex.creators.create(request, callOptions);
+await qredex.creators.get({ creator_id }, callOptions);
+await qredex.creators.list(filters, callOptions);
 
-await client.links.create(request, callOptions);
-await client.links.get({ link_id }, callOptions);
-await client.links.list(filters, callOptions);
+await qredex.links.create(request, callOptions);
+await qredex.links.get({ link_id }, callOptions);
+await qredex.links.list(filters, callOptions);
 
-await client.intents.issueInfluenceIntentToken(request, callOptions);
-await client.intents.lockPurchaseIntent(request, callOptions);
+await qredex.intents.issueInfluenceIntentToken(request, callOptions);
+await qredex.intents.lockPurchaseIntent(request, callOptions);
 
-await client.orders.recordPaidOrder(request, callOptions);
-await client.refunds.recordRefund(request, callOptions);
+await qredex.orders.recordPaidOrder(request, callOptions);
+await qredex.refunds.recordRefund(request, callOptions);
 ```
 
 Method naming rules:
@@ -165,7 +165,7 @@ Method naming rules:
 Recommended construction:
 
 ```ts
-const client = Qredex.init({
+const qredex = Qredex.init({
   auth: { clientId, clientSecret },
 });
 ```
@@ -229,7 +229,7 @@ Avoid forcing callers to manually issue, store, or refresh tokens in normal usag
 Example:
 
 ```ts
-await client.orders.recordPaidOrder(
+await qredex.orders.recordPaidOrder(
   {
     store_id,
     external_order_id,

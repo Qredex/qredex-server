@@ -19,7 +19,7 @@
 ```ts
 import { Qredex } from "qredex";
 
-export const client = Qredex.bootstrap();
+export const qredex = Qredex.bootstrap();
 ```
 
 Canonical host presets are built in:
@@ -32,10 +32,10 @@ Canonical host presets are built in:
 
 ## 2. Creator Setup
 
-Create creators through `client.creators.create()`. Keep creator handles stable and merchant-scoped.
+Create creators through `qredex.creators.create()`. Keep creator handles stable and merchant-scoped.
 
 ```ts
-const creator = await client.creators.create({
+const creator = await qredex.creators.create({
   handle: "alice",
   display_name: "Alice",
 });
@@ -43,10 +43,10 @@ const creator = await client.creators.create({
 
 ## 3. Link Setup
 
-Use `client.links.create()` with the correct `store_id` and a valid storefront `destination_path`.
+Use `qredex.links.create()` with the correct `store_id` and a valid storefront `destination_path`.
 
 ```ts
-const link = await client.links.create({
+const link = await qredex.links.create({
   store_id: process.env.QREDEX_STORE_ID!,
   creator_id: creator.id,
   link_name: "spring-launch",
@@ -58,10 +58,10 @@ const link = await client.links.create({
 
 ## 4. IIT Issuance
 
-Use `client.intents.issueInfluenceIntentToken()` only for authenticated backend click flows. IIT is click-time intent, not locked purchase truth.
+Use `qredex.intents.issueInfluenceIntentToken()` only for authenticated backend click flows. IIT is click-time intent, not locked purchase truth.
 
 ```ts
-const iit = await client.intents.issueInfluenceIntentToken({
+const iit = await qredex.intents.issueInfluenceIntentToken({
   link_id: link.id,
   landing_path: "/products/spring-launch",
 });
@@ -69,10 +69,10 @@ const iit = await client.intents.issueInfluenceIntentToken({
 
 ## 5. PIT Lock
 
-Use `client.intents.lockPurchaseIntent()` for authenticated machine flows. PIT is the canonical locked attribution signal.
+Use `qredex.intents.lockPurchaseIntent()` for authenticated machine flows. PIT is the canonical locked attribution signal.
 
 ```ts
-const pit = await client.intents.lockPurchaseIntent({
+const pit = await qredex.intents.lockPurchaseIntent({
   token: iit.token,
   source: "backend-cart-lock",
   integrity_version: 2,
@@ -84,7 +84,7 @@ const pit = await client.intents.lockPurchaseIntent({
 Use stable order IDs. Include `purchase_intent_token` when a valid PIT exists.
 
 ```ts
-const order = await client.orders.recordPaidOrder({
+const order = await qredex.orders.recordPaidOrder({
   store_id: process.env.QREDEX_STORE_ID!,
   external_order_id: "order-100045",
   order_number: "100045",
@@ -101,7 +101,7 @@ Do not collapse Qredex attribution fields into a generic success flag. Consume `
 Use stable external refund IDs and accurate timestamps/totals.
 
 ```ts
-const refund = await client.refunds.recordRefund({
+const refund = await qredex.refunds.recordRefund({
   store_id: process.env.QREDEX_STORE_ID!,
   external_order_id: "order-100045",
   external_refund_id: "refund-100045-1",
@@ -115,7 +115,7 @@ const refund = await client.refunds.recordRefund({
 - Treat `INGESTED` and `IDEMPOTENT` as successful business acknowledgements when documented by Qredex policy.
 - Treat `409` outcomes as policy/conflict rejections, not transport failures.
 - Expect the SDK to reject obviously invalid request shapes locally before making a network call.
-- Subscribe to `client.events` or use `onEvent` for sanitized request, auth, retry, and validation lifecycle visibility.
+- Subscribe to `qredex.events` or use `onEvent` for sanitized request, auth, retry, and validation lifecycle visibility.
 - Auth retries happen internally for token issuance. Read retries are opt-in and only apply to `GET` and `HEAD`.
 - Never log `client_secret`, bearer tokens, IIT, or PIT in plaintext.
 - Keep store scoping correct on every write.

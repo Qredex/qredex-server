@@ -1,6 +1,6 @@
 import { Qredex } from "../src";
 
-const client = Qredex.init({
+const qredex = Qredex.init({
   auth: {
     clientId: process.env.QREDEX_CLIENT_ID!,
     clientSecret: process.env.QREDEX_CLIENT_SECRET!,
@@ -8,7 +8,7 @@ const client = Qredex.init({
   },
 });
 
-const refund = await client.refunds.recordRefund({
+const refund = await qredex.refunds.recordRefund({
   store_id: process.env.QREDEX_STORE_ID!,
   external_order_id: "order-100045",
   external_refund_id: "refund-100045-1",

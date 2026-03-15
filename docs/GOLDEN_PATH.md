@@ -21,7 +21,7 @@ This flow is designed to preserve Qredex attribution semantics and reduce integr
 ```ts
 import { Qredex } from "qredex";
 
-export const client = Qredex.init({
+export const qredex = Qredex.init({
   environment: "production",
   auth: {
     clientId: process.env.QREDEX_CLIENT_ID!,
@@ -35,7 +35,7 @@ export const client = Qredex.init({
 Use a stable creator handle for the merchant-scoped creator identity.
 
 ```ts
-const creator = await client.creators.create({
+const creator = await qredex.creators.create({
   handle: "alice",
   display_name: "Alice Example",
 });
@@ -48,7 +48,7 @@ If the creator may already exist, handle `409` explicitly and fetch the canonica
 Use the correct `store_id` and a real storefront destination path.
 
 ```ts
-const link = await client.links.create({
+const link = await qredex.links.create({
   store_id: process.env.QREDEX_STORE_ID!,
   creator_id: creator.id,
   link_name: "spring-launch",
@@ -63,7 +63,7 @@ const link = await client.links.create({
 Issue IIT for authenticated backend click flows.
 
 ```ts
-const iit = await client.intents.issueInfluenceIntentToken({
+const iit = await qredex.intents.issueInfluenceIntentToken({
   link_id: link.id,
   landing_path: "/products/spring-launch",
 });
@@ -76,7 +76,7 @@ IIT is click-time intent. It is not the final locked purchase signal.
 Lock PIT for the machine flow that represents purchase intent.
 
 ```ts
-const pit = await client.intents.lockPurchaseIntent({
+const pit = await qredex.intents.lockPurchaseIntent({
   token: iit.token,
   source: "backend-cart-lock",
   integrity_version: 2,
@@ -90,7 +90,7 @@ PIT is the canonical locked attribution token.
 Use a stable merchant order identifier and attach the PIT token when available.
 
 ```ts
-const order = await client.orders.recordPaidOrder({
+const order = await qredex.orders.recordPaidOrder({
   store_id: process.env.QREDEX_STORE_ID!,
   external_order_id: "order-100045",
   order_number: "100045",
@@ -113,7 +113,7 @@ Do not flatten these into a generic success boolean.
 Refunds should use a stable external refund identifier and reference the original external order ID.
 
 ```ts
-const refund = await client.refunds.recordRefund({
+const refund = await qredex.refunds.recordRefund({
   store_id: process.env.QREDEX_STORE_ID!,
   external_order_id: "order-100045",
   external_refund_id: "refund-100045-1",
@@ -197,7 +197,7 @@ Action:
 - keep `external_order_id` stable on replays
 - keep `external_refund_id` stable on replays
 - do not log `client_secret`, bearer tokens, IIT, or PIT
-- use `onEvent` or `client.events` for sanitized request and retry visibility
+- use `onEvent` or `qredex.events` for sanitized request and retry visibility
 - validate the full flow in staging before production rollout
 
 ## What Not To Do

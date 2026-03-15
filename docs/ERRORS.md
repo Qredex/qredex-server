@@ -39,7 +39,7 @@ Every `QredexError` may include:
 import { ConflictError, Qredex } from "qredex";
 
 try {
-  await client.refunds.recordRefund({
+  await qredex.refunds.recordRefund({
     store_id,
     external_order_id: "order-100045",
     external_refund_id: "refund-100045-1",
@@ -58,7 +58,7 @@ try {
 When Qredex returns request or trace identifiers in headers, the SDK surfaces them on the thrown error object. You can also pass request-scoped IDs into any operation with `QredexCallOptions`:
 
 ```ts
-await client.orders.recordPaidOrder(
+await qredex.orders.recordPaidOrder(
   {
     store_id,
     external_order_id: "order-100045",

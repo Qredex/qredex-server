@@ -1,6 +1,6 @@
 import { Qredex } from "../src";
 
-const client = Qredex.init({
+const qredex = Qredex.init({
   auth: {
     clientId: process.env.QREDEX_CLIENT_ID!,
     clientSecret: process.env.QREDEX_CLIENT_SECRET!,
@@ -8,7 +8,7 @@ const client = Qredex.init({
   },
 });
 
-const iit = await client.intents.issueInfluenceIntentToken({
+const iit = await qredex.intents.issueInfluenceIntentToken({
   link_id: process.env.QREDEX_LINK_ID!,
   landing_path: "/products/spring-launch",
   integrity_version: 2,
