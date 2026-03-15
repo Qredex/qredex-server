@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 
 import { AuthenticationError, ConflictError, Qredex, RateLimitError } from "../src";
-import { startMockQredexServer } from "./mock-server";
+import { createDevelopmentProxyFetch, startMockQredexServer } from "./mock-server";
 
 const UUIDS = {
   creator: "11111111-1111-4111-8111-111111111111",
@@ -313,7 +313,7 @@ describe("Qredex mock server integration", () => {
 
     const qredex = Qredex.init({
       environment: "development",
-      baseUrl: server.baseUrl,
+      fetch: createDevelopmentProxyFetch(server.baseUrl),
       auth: {
         clientId: "client",
         clientSecret: "secret",
@@ -436,7 +436,7 @@ describe("Qredex mock server integration", () => {
 
     const badQredex = Qredex.init({
       environment: "development",
-      baseUrl: server.baseUrl,
+      fetch: createDevelopmentProxyFetch(server.baseUrl),
       auth: {
         clientId: "bad",
         clientSecret: "creds",
@@ -450,7 +450,7 @@ describe("Qredex mock server integration", () => {
     const events: string[] = [];
     const qredex = Qredex.init({
       environment: "development",
-      baseUrl: server.baseUrl,
+      fetch: createDevelopmentProxyFetch(server.baseUrl),
       auth: {
         clientId: "client",
         clientSecret: "secret",
@@ -502,7 +502,7 @@ describe("Qredex mock server integration", () => {
 
     const qredex = Qredex.init({
       environment: "development",
-      baseUrl: server.baseUrl,
+      fetch: createDevelopmentProxyFetch(server.baseUrl),
       auth: {
         type: "access_token",
         accessToken: "static-token",

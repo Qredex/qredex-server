@@ -2,12 +2,13 @@
 
 ## Scope
 
-`@qredex/node` is the canonical Node server SDK for authenticated Qredex integrations. It is intentionally limited to the Integrations API and machine-to-machine flows.
+`qredex` is the canonical Node server SDK for authenticated Qredex integrations. It is intentionally limited to the Integrations API and machine-to-machine flows.
 
 ## Required Environment
 
 - `QREDEX_CLIENT_ID`
 - `QREDEX_CLIENT_SECRET`
+- `QREDEX_BASE_URL`
 - `QREDEX_STORE_ID` for link/order/refund calls
 - optional `QREDEX_ENVIRONMENT`:
   - `production` (default)
@@ -17,20 +18,9 @@
 ## 1. Create The Client
 
 ```ts
-import { Qredex } from "@qredex/node";
+import { Qredex } from "qredex";
 
-export const client = Qredex.init({
-  environment:
-    process.env.QREDEX_ENVIRONMENT === "staging"
-      ? "staging"
-      : process.env.QREDEX_ENVIRONMENT === "development"
-        ? "development"
-        : "production",
-  auth: {
-    clientId: process.env.QREDEX_CLIENT_ID!,
-    clientSecret: process.env.QREDEX_CLIENT_SECRET!,
-  },
-});
+export const client = Qredex.fromEnv();
 ```
 
 Canonical host presets are built in:
@@ -39,7 +29,9 @@ Canonical host presets are built in:
 - `staging` -> `https://staging-api.qredex.com`
 - `development` -> `http://localhost:8080`
 
-Use `baseUrl` only as an internal/testing override with `environment: "staging"` or `environment: "development"`. Production should always resolve from the built-in environment preset.
+`Qredex.fromEnv()` reads `QREDEX_CLIENT_ID`, `QREDEX_CLIENT_SECRET`, `QREDEX_BASE_URL`, and optional `QREDEX_ENVIRONMENT`.
+
+Use `QREDEX_BASE_URL` only as an internal/testing override with `QREDEX_ENVIRONMENT=staging` or `QREDEX_ENVIRONMENT=development`. If `QREDEX_BASE_URL` is set without `QREDEX_ENVIRONMENT`, `fromEnv()` treats it as a development override.
 
 ## 2. Creator Setup
 

@@ -2,7 +2,7 @@
 
 ## 0.1.0
 
-Initial production-ready release of `@qredex/node`.
+Initial production-ready release of `qredex`.
 
 Includes:
 

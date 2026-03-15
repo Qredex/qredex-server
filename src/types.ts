@@ -175,7 +175,6 @@ export interface QredexCallOptions {
 }
 
 export interface QredexOptions {
-  baseUrl?: string;
   environment?: QredexEnvironment;
   auth: QredexAuthOptions;
   timeoutMs?: number;

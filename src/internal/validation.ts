@@ -92,15 +92,7 @@ function assertOptionalPageSize(field: string, value: unknown): void {
 }
 
 export function resolveClientBaseUrl(options: QredexOptions): string {
-  const environment = options.environment ?? "production";
-
-  if (options.baseUrl && environment === "production") {
-    throw new ConfigurationError(
-      "Qredex baseUrl overrides require environment to be 'staging' or 'development'.",
-    );
-  }
-
-  const baseUrl = options.baseUrl ?? ENVIRONMENT_BASE_URLS[environment];
+  const baseUrl = ENVIRONMENT_BASE_URLS[options.environment ?? "production"];
 
   let url: URL;
 

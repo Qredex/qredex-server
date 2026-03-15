@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`@qredex/node` is the canonical Node.js server SDK for the Qredex Integrations API.
+`qredex` is the canonical Node.js server SDK for the Qredex Integrations API.
 
 It is not a generic API wrapper.
 It is the production distribution layer for machine-to-machine Qredex integrations.

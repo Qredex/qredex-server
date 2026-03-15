@@ -1,4 +1,4 @@
-# Releasing `@qredex/node`
+# Releasing `qredex`
 
 ## Release Checklist
 

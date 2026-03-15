@@ -2,7 +2,7 @@
 
 ## Goal
 
-This is the practical Qredex machine-integration path for merchants using `@qredex/node`.
+This is the practical Qredex machine-integration path for merchants using `qredex`.
 
 The canonical sequence is:
 
@@ -19,7 +19,7 @@ This flow is designed to preserve Qredex attribution semantics and reduce integr
 ## 1. Create The Client
 
 ```ts
-import { Qredex } from "@qredex/node";
+import { Qredex } from "qredex";
 
 export const client = Qredex.init({
   environment: "production",

@@ -46,6 +46,46 @@ export class Qredex {
     return new Qredex(options);
   }
 
+  static fromEnv(
+    env: NodeJS.ProcessEnv = process.env,
+    overrides: Omit<QredexOptions, "auth" | "environment"> = {},
+  ): Qredex {
+    const clientId = env.QREDEX_CLIENT_ID?.trim();
+    const clientSecret = env.QREDEX_CLIENT_SECRET?.trim();
+    const rawEnvironment = env.QREDEX_ENVIRONMENT?.trim();
+
+    if (!clientId) {
+      throw new ConfigurationError("Qredex.fromEnv requires QREDEX_CLIENT_ID.");
+    }
+
+    if (!clientSecret) {
+      throw new ConfigurationError("Qredex.fromEnv requires QREDEX_CLIENT_SECRET.");
+    }
+
+    if (
+      rawEnvironment &&
+      !["production", "staging", "development"].includes(rawEnvironment)
+    ) {
+      throw new ConfigurationError(
+        "Qredex.fromEnv requires QREDEX_ENVIRONMENT to be 'production', 'staging', or 'development'.",
+      );
+    }
+
+    const environment = (
+      rawEnvironment ??
+      "production"
+    ) as QredexOptions["environment"];
+
+    return Qredex.init({
+      ...overrides,
+      environment,
+      auth: {
+        clientId,
+        clientSecret,
+      },
+    });
+  }
+
   private constructor(options: QredexOptions) {
     const clock: QredexClock = options.clock ?? {
       now: () => Date.now(),

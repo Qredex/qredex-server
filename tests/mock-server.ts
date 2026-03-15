@@ -116,3 +116,21 @@ export async function startMockQredexServer(routes: RouteDefinition[]) {
     },
   };
 }
+
+export function createDevelopmentProxyFetch(baseUrl: string): typeof fetch {
+  const upstreamOrigin = new URL(baseUrl).origin;
+
+  return async (input: Request | URL | string, init?: RequestInit) => {
+    const original = typeof input === "string" || input instanceof URL
+      ? new URL(String(input))
+      : new URL(input.url);
+
+    const redirected = new URL(original.pathname + original.search, upstreamOrigin);
+
+    if (input instanceof Request) {
+      return fetch(new Request(redirected, input), init);
+    }
+
+    return fetch(redirected, init);
+  };
+}

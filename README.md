@@ -1,4 +1,4 @@
-# `@qredex/node`
+# `qredex`
 
 Canonical Node.js server SDK for the Qredex Integrations API.
 
@@ -17,20 +17,15 @@ It does not include merchant dashboard APIs, internal APIs, Shopify OAuth/sessio
 ## Install
 
 ```bash
-npm install @qredex/node
+npm install qredex
 ```
 
 ## Quick Start
 
 ```ts
-import { Qredex } from "@qredex/node";
+import { Qredex } from "qredex";
 
-const client = Qredex.init({
-  auth: {
-    clientId: process.env.QREDEX_CLIENT_ID!,
-    clientSecret: process.env.QREDEX_CLIENT_SECRET!,
-  },
-});
+const client = Qredex.fromEnv();
 
 const creator = await client.creators.create({
   handle: "alice",
@@ -49,6 +44,7 @@ const link = await client.links.create({
 
 ```ts
 const client = Qredex.init({ auth });
+const envClient = Qredex.fromEnv();
 
 await client.auth.issueToken();
 
@@ -107,6 +103,27 @@ The SDK:
 - validates high-mistake request fields before sending them
 - never logs secrets or bearer tokens by default
 - supports custom token caches, logging hooks, typed sanitized events, timeout overrides, and explicit token issuance through `client.auth.issueToken()`
+
+## Environment Bootstrap
+
+You can bootstrap the SDK directly from process environment:
+
+```ts
+const qredex = Qredex.fromEnv();
+```
+
+`Qredex.fromEnv()` reads:
+
+- `QREDEX_CLIENT_ID`
+- `QREDEX_CLIENT_SECRET`
+- `QREDEX_BASE_URL`
+- `QREDEX_ENVIRONMENT` optional
+
+Behavior:
+
+- `QREDEX_CLIENT_ID` and `QREDEX_CLIENT_SECRET` are required
+- `QREDEX_ENVIRONMENT` defaults to `production` when `QREDEX_BASE_URL` is not set
+- `QREDEX_BASE_URL` is treated as a non-production override and defaults `fromEnv()` to `development` when no explicit `QREDEX_ENVIRONMENT` is provided
 
 ## Environment Selection
 

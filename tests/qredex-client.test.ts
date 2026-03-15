@@ -26,6 +26,88 @@ const UUIDS = {
 };
 
 describe("Qredex", () => {
+  it("builds a client from environment variables", async () => {
+    const { calls, fetch } = createFetchMock([
+      jsonResponse(200, {
+        access_token: "env-token",
+        token_type: "Bearer",
+        expires_in: 3600,
+      }),
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
+      }),
+    ]);
+
+    const client = Qredex.fromEnv({
+      QREDEX_CLIENT_ID: "env-client",
+      QREDEX_CLIENT_SECRET: "env-secret",
+      QREDEX_ENVIRONMENT: "staging",
+    }, {
+      fetch,
+    });
+
+    await client.creators.list();
+
+    expect(String(calls[0]!.input)).toBe("https://staging-api.qredex.com/api/v1/auth/token");
+    expect(String(calls[1]!.input)).toBe("https://staging-api.qredex.com/api/v1/integrations/creators");
+  });
+
+  it("defaults fromEnv to production when QREDEX_ENVIRONMENT is omitted", async () => {
+    const { calls, fetch } = createFetchMock([
+      jsonResponse(200, {
+        access_token: "env-token",
+        token_type: "Bearer",
+        expires_in: 3600,
+      }),
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
+      }),
+    ]);
+
+    const client = Qredex.fromEnv({
+      QREDEX_CLIENT_ID: "env-client",
+      QREDEX_CLIENT_SECRET: "env-secret",
+    }, {
+      fetch,
+    });
+
+    await client.creators.list();
+
+    expect(String(calls[0]!.input)).toBe("https://api.qredex.com/api/v1/auth/token");
+    expect(String(calls[1]!.input)).toBe("https://api.qredex.com/api/v1/integrations/creators");
+  });
+
+  it("fails fast when fromEnv is missing required credentials", () => {
+    expect(() => Qredex.fromEnv({})).toThrowError(
+      "Qredex.fromEnv requires QREDEX_CLIENT_ID.",
+    );
+    expect(() =>
+      Qredex.fromEnv({
+        QREDEX_CLIENT_ID: "env-client",
+      }))
+      .toThrowError("Qredex.fromEnv requires QREDEX_CLIENT_SECRET.");
+  });
+
+  it("fails fast when fromEnv receives an invalid environment", () => {
+    expect(() =>
+      Qredex.fromEnv({
+        QREDEX_CLIENT_ID: "env-client",
+        QREDEX_CLIENT_SECRET: "env-secret",
+        QREDEX_ENVIRONMENT: "sandbox",
+      }),
+    ).toThrowError(
+      "Qredex.fromEnv requires QREDEX_ENVIRONMENT to be 'production', 'staging', or 'development'.",
+    );
+  });
+
   it("issues tokens with client credentials and reuses the cached token for creator writes", async () => {
     const { calls, fetch } = createFetchMock([
       jsonResponse(200, {
@@ -45,8 +127,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
-      environment: "development",
-      baseUrl: "https://api.qredex.test",
+      environment: "staging",
       auth: {
         clientId: "client-123",
         clientSecret: "secret-456",
@@ -64,13 +145,13 @@ describe("Qredex", () => {
     expect(token.access_token).toBe("token-1");
     expect(creator.handle).toBe("alice");
     expect(calls).toHaveLength(2);
-    expect(String(calls[0]!.input)).toBe("https://api.qredex.test/api/v1/auth/token");
+    expect(String(calls[0]!.input)).toBe("https://staging-api.qredex.com/api/v1/auth/token");
     expect(getHeader(calls[0]!, "authorization")).toBe("Basic Y2xpZW50LTEyMzpzZWNyZXQtNDU2");
     expect(getHeader(calls[0]!, "content-type")).toBe("application/x-www-form-urlencoded");
     expect(getBodyText(calls[0]!)).toBe(
       "grant_type=client_credentials&scope=direct%3Acreators%3Awrite",
     );
-    expect(String(calls[1]!.input)).toBe("https://api.qredex.test/api/v1/integrations/creators");
+    expect(String(calls[1]!.input)).toBe("https://staging-api.qredex.com/api/v1/integrations/creators");
     expect(getHeader(calls[1]!, "authorization")).toBe("Bearer token-1");
     expect(getJsonBody<{ handle: string }>(calls[1]!).handle).toBe("alice");
   });
@@ -223,8 +304,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
-      environment: "development",
-      baseUrl: "https://api.qredex.test",
+      environment: "staging",
       auth: {
         clientId: "client",
         clientSecret: "secret",
@@ -272,19 +352,19 @@ describe("Qredex", () => {
     });
 
     expect(calls).toHaveLength(11);
-    expect(String(calls[0]!.input)).toBe("https://api.qredex.test/api/v1/auth/token");
-    expect(String(calls[2]!.input)).toBe(`https://api.qredex.test/api/v1/integrations/creators/${UUIDS.creator}`);
+    expect(String(calls[0]!.input)).toBe("https://staging-api.qredex.com/api/v1/auth/token");
+    expect(String(calls[2]!.input)).toBe(`https://staging-api.qredex.com/api/v1/integrations/creators/${UUIDS.creator}`);
     expect(String(calls[3]!.input)).toBe(
-      "https://api.qredex.test/api/v1/integrations/creators?status=ACTIVE",
+      "https://staging-api.qredex.com/api/v1/integrations/creators?status=ACTIVE",
     );
-    expect(String(calls[5]!.input)).toBe(`https://api.qredex.test/api/v1/integrations/links/${UUIDS.link}`);
+    expect(String(calls[5]!.input)).toBe(`https://staging-api.qredex.com/api/v1/integrations/links/${UUIDS.link}`);
     expect(String(calls[6]!.input)).toBe(
-      "https://api.qredex.test/api/v1/integrations/links?page=1&size=10&status=ACTIVE&destination=%2Fproducts%2Fspring-launch&expired=false",
+      "https://staging-api.qredex.com/api/v1/integrations/links?page=1&size=10&status=ACTIVE&destination=%2Fproducts%2Fspring-launch&expired=false",
     );
-    expect(String(calls[7]!.input)).toBe("https://api.qredex.test/api/v1/integrations/intents/token");
-    expect(String(calls[8]!.input)).toBe("https://api.qredex.test/api/v1/integrations/intents/lock");
-    expect(String(calls[9]!.input)).toBe("https://api.qredex.test/api/v1/integrations/orders/paid");
-    expect(String(calls[10]!.input)).toBe("https://api.qredex.test/api/v1/integrations/orders/refund");
+    expect(String(calls[7]!.input)).toBe("https://staging-api.qredex.com/api/v1/integrations/intents/token");
+    expect(String(calls[8]!.input)).toBe("https://staging-api.qredex.com/api/v1/integrations/intents/lock");
+    expect(String(calls[9]!.input)).toBe("https://staging-api.qredex.com/api/v1/integrations/orders/paid");
+    expect(String(calls[10]!.input)).toBe("https://staging-api.qredex.com/api/v1/integrations/orders/refund");
 
     for (const call of calls.slice(1)) {
       expect(getHeader(call, "authorization")).toBe("Bearer token-flow");

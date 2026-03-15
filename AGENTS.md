@@ -8,7 +8,7 @@ This SDK is not a generic API wrapper.
 It is the canonical Node distribution layer for Qredex server integrations.
 
 Package target:
-- `@qredex/node`
+- `qredex`
 
 Primary audience:
 - merchant backends
