@@ -177,29 +177,23 @@ The public SDK surface must be handwritten and curated, even if transport is gen
 ### Preferred Shape
 
 - `Qredex`
-- `client.creators`
-- `client.links`
-- `client.intents`
-- `client.orders`
-- `client.refunds`
+- `qredex.creators`
+- `qredex.links`
+- `qredex.intents`
+- `qredex.orders`
+- `qredex.refunds`
 
 Example shape:
 
 ```ts
-const client = Qredex.init({
-  baseUrl,
-  auth: {
-    clientId,
-    clientSecret,
-  },
-});
+const qredex = Qredex.bootstrap();
 
-await client.creators.create({...});
-await client.links.create({...});
-await client.intents.issueInfluenceIntentToken({...});
-await client.intents.lockPurchaseIntent({...});
-await client.orders.recordPaidOrder({...});
-await client.refunds.recordRefund({...});
+await qredex.creators.create({...});
+await qredex.links.create({...});
+await qredex.intents.issueInfluenceIntentToken({...});
+await qredex.intents.lockPurchaseIntent({...});
+await qredex.orders.recordPaidOrder({...});
+await qredex.refunds.recordRefund({...});
 ```
 
 ### Design Constraints
