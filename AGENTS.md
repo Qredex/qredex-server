@@ -176,7 +176,7 @@ The public SDK surface must be handwritten and curated, even if transport is gen
 
 ### Preferred Shape
 
-- `QredexClient`
+- `Qredex`
 - `client.creators`
 - `client.links`
 - `client.intents`
@@ -186,7 +186,7 @@ The public SDK surface must be handwritten and curated, even if transport is gen
 Example shape:
 
 ```ts
-const client = QredexClient.init({
+const client = Qredex.init({
   baseUrl,
   auth: {
     clientId,

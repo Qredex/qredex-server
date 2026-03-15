@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { QredexClient } from "../src";
+import { Qredex } from "../src";
 
 const liveEnabled = process.env.QREDEX_LIVE_ENABLED === "1";
 const requiredEnv = [
@@ -14,7 +14,7 @@ describe.skipIf(!liveEnabled || missingEnv.length > 0)(
   "Qredex live integration",
   () => {
     it("runs the canonical integrations flow against a live API", async () => {
-      const client = QredexClient.init({
+      const client = Qredex.init({
         environment:
           process.env.QREDEX_LIVE_ENVIRONMENT === "staging"
             ? "staging"

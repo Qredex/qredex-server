@@ -33,7 +33,7 @@ export class QredexAuthClient {
   }
 }
 
-export class QredexClient {
+export class Qredex {
   readonly auth: QredexAuthClient;
   readonly creators: CreatorsClient;
   readonly events: QredexEventSubscriber;
@@ -42,8 +42,8 @@ export class QredexClient {
   readonly orders: OrdersClient;
   readonly refunds: RefundsClient;
 
-  static init(options: QredexClientOptions): QredexClient {
-    return new QredexClient(options);
+  static init(options: QredexClientOptions): Qredex {
+    return new Qredex(options);
   }
 
   private constructor(options: QredexClientOptions) {
@@ -52,7 +52,7 @@ export class QredexClient {
     };
 
     if (!options.auth) {
-      throw new ConfigurationError("QredexClient requires auth configuration.");
+      throw new ConfigurationError("Qredex requires auth configuration.");
     }
 
     const eventBus = new QredexEventBus(options.logger, [
@@ -94,3 +94,8 @@ export class QredexClient {
     this.refunds = new RefundsClient(http);
   }
 }
+
+/**
+ * @deprecated Use `Qredex` instead.
+ */
+export const QredexClient = Qredex;

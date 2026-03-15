@@ -17,9 +17,9 @@
 ## 1. Create The Client
 
 ```ts
-import { QredexClient } from "@qredex/node";
+import { Qredex } from "@qredex/node";
 
-export const client = QredexClient.init({
+export const client = Qredex.init({
   environment:
     process.env.QREDEX_ENVIRONMENT === "staging"
       ? "staging"

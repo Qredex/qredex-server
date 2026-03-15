@@ -32,7 +32,7 @@ The SDK supports these built-in environments:
 
 Public API stability applies to:
 
-- `QredexClient`
+- `Qredex`
 - exported request and response types
 - exported error classes
 - documented config fields

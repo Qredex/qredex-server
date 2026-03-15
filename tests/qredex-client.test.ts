@@ -5,6 +5,7 @@ import {
   AuthenticationError,
   ConflictError,
   NetworkError,
+  Qredex,
   QredexClient,
   ValidationError as QredexValidationError,
   ValidationError,
@@ -25,7 +26,11 @@ const UUIDS = {
   store: "44444444-4444-4444-8444-444444444444",
 };
 
-describe("QredexClient", () => {
+describe("Qredex", () => {
+  it("keeps QredexClient as a compatibility alias", () => {
+    expect(QredexClient).toBe(Qredex);
+  });
+
   it("issues tokens with client credentials and reuses the cached token for creator writes", async () => {
     const { calls, fetch } = createFetchMock([
       jsonResponse(200, {
@@ -44,7 +49,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client-123",
@@ -221,7 +226,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -309,7 +314,7 @@ describe("QredexClient", () => {
       ),
     ]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -345,7 +350,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "bad-client",
@@ -381,7 +386,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -423,7 +428,7 @@ describe("QredexClient", () => {
       ),
     ]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -448,7 +453,7 @@ describe("QredexClient", () => {
       new TypeError("fetch failed"),
     ]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -477,7 +482,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         type: "access_token",
@@ -504,7 +509,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       auth: {
         type: "access_token",
         accessToken: "prod-token",
@@ -528,7 +533,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       environment: "staging",
       auth: {
         type: "access_token",
@@ -553,7 +558,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       environment: "development",
       auth: {
         type: "access_token",
@@ -570,7 +575,7 @@ describe("QredexClient", () => {
   it("fails fast on invalid SDK request input before making a network call", async () => {
     const { calls, fetch } = createFetchMock([]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -618,7 +623,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -660,7 +665,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       auth: {
         type: "access_token",
         accessToken: "subscribed-token",
@@ -682,7 +687,7 @@ describe("QredexClient", () => {
     const events: string[] = [];
     const { fetch } = createFetchMock([]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       auth: {
         type: "access_token",
         accessToken: "validation-token",
@@ -720,7 +725,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       auth: {
         type: "access_token",
         accessToken: "retry-token",
@@ -755,7 +760,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = QredexClient.init({
+    const client = Qredex.init({
       auth: {
         clientId: "clock-client",
         clientSecret: "clock-secret",

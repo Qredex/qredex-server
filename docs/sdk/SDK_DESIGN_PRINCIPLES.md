@@ -40,7 +40,7 @@ The SDK should feel:
 Expose one configured client as the main entrypoint:
 
 ```ts
-const client = QredexClient.init({
+const client = Qredex.init({
   auth: { clientId, clientSecret },
 });
 ```
@@ -57,7 +57,7 @@ This keeps integrations discoverable and predictable.
 
 ### 2. Static Factory
 
-Use `QredexClient.init(...)` as the canonical construction path.
+Use `Qredex.init(...)` as the canonical construction path.
 
 Why:
 
@@ -120,7 +120,7 @@ Avoid generic middleware or interceptor stacks as the default extension model.
 The recommended public shape is:
 
 ```ts
-const client = QredexClient.init({
+const client = Qredex.init({
   environment: "production",
   auth: {
     clientId,
@@ -165,7 +165,7 @@ Method naming rules:
 Recommended construction:
 
 ```ts
-const client = QredexClient.init({
+const client = Qredex.init({
   auth: { clientId, clientSecret },
 });
 ```

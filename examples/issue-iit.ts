@@ -1,6 +1,6 @@
-import { QredexClient } from "../src";
+import { Qredex } from "../src";
 
-const client = QredexClient.init({
+const client = Qredex.init({
   auth: {
     clientId: process.env.QREDEX_CLIENT_ID!,
     clientSecret: process.env.QREDEX_CLIENT_SECRET!,

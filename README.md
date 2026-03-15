@@ -23,9 +23,9 @@ npm install @qredex/node
 ## Quick Start
 
 ```ts
-import { QredexClient } from "@qredex/node";
+import { Qredex } from "@qredex/node";
 
-const client = QredexClient.init({
+const client = Qredex.init({
   auth: {
     clientId: process.env.QREDEX_CLIENT_ID!,
     clientSecret: process.env.QREDEX_CLIENT_SECRET!,
@@ -48,7 +48,7 @@ const link = await client.links.create({
 ## Public API
 
 ```ts
-const client = QredexClient.init({ auth });
+const client = Qredex.init({ auth });
 
 await client.auth.issueToken();
 
@@ -86,7 +86,7 @@ await client.refunds.recordRefund(request);
 Normal usage is automatic:
 
 ```ts
-const client = QredexClient.init({
+const client = Qredex.init({
   auth: {
     clientId,
     clientSecret,
@@ -113,7 +113,7 @@ The SDK:
 Production is the default, so most integrations do not need to pass any host configuration.
 
 ```ts
-const productionClient = QredexClient.init({
+const productionClient = Qredex.init({
   auth: { clientId, clientSecret },
 });
 ```
@@ -121,12 +121,12 @@ const productionClient = QredexClient.init({
 Use presets when you need staging or local development:
 
 ```ts
-const stagingClient = QredexClient.init({
+const stagingClient = Qredex.init({
   environment: "staging",
   auth: { clientId, clientSecret },
 });
 
-const developmentClient = QredexClient.init({
+const developmentClient = Qredex.init({
   environment: "development",
   auth: { clientId, clientSecret },
 });
@@ -139,7 +139,7 @@ const developmentClient = QredexClient.init({
 You can observe sanitized lifecycle events with either `onEvent` or `client.events`.
 
 ```ts
-const client = QredexClient.init({
+const client = Qredex.init({
   auth: { clientId, clientSecret },
   onEvent(event) {
     if (event.type === "response") {
@@ -174,7 +174,7 @@ Event types include:
 - Read retries are opt-in and only apply to `GET` and `HEAD`.
 
 ```ts
-const client = QredexClient.init({
+const client = Qredex.init({
   auth: { clientId, clientSecret },
   readRetry: {
     maxAttempts: 2,
@@ -189,7 +189,7 @@ const client = QredexClient.init({
 You can inject a deterministic clock for auth timing and event assertions:
 
 ```ts
-const client = QredexClient.init({
+const client = Qredex.init({
   auth: { clientId, clientSecret },
   clock: {
     now: () => Date.parse("2026-03-15T12:00:00Z"),

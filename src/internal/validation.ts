@@ -99,12 +99,12 @@ export function resolveClientBaseUrl(options: QredexClientOptions): string {
   try {
     url = new URL(baseUrl);
   } catch {
-    throw new ConfigurationError("QredexClient baseUrl must be a valid URL.");
+    throw new ConfigurationError("Qredex baseUrl must be a valid URL.");
   }
 
   if (!["https:", "http:"].includes(url.protocol)) {
     throw new ConfigurationError(
-      "QredexClient baseUrl must use http or https.",
+      "Qredex baseUrl must use http or https.",
     );
   }
 

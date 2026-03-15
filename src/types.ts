@@ -188,3 +188,5 @@ export interface QredexClientOptions {
   defaultHeaders?: Record<string, string>;
   userAgentSuffix?: string;
 }
+
+export type QredexOptions = QredexClientOptions;
