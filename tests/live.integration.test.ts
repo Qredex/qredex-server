@@ -21,9 +21,6 @@ describe.skipIf(!liveEnabled || missingEnv.length > 0)(
             : process.env.QREDEX_LIVE_ENVIRONMENT === "development"
               ? "development"
               : "production",
-        ...(process.env.QREDEX_LIVE_BASE_URL
-          ? { baseUrl: process.env.QREDEX_LIVE_BASE_URL }
-          : {}),
         auth: {
           clientId: process.env.QREDEX_LIVE_CLIENT_ID!,
           clientSecret: process.env.QREDEX_LIVE_CLIENT_SECRET!,

@@ -116,14 +116,12 @@ const qredex = Qredex.fromEnv();
 
 - `QREDEX_CLIENT_ID`
 - `QREDEX_CLIENT_SECRET`
-- `QREDEX_BASE_URL`
 - `QREDEX_ENVIRONMENT` optional
 
 Behavior:
 
 - `QREDEX_CLIENT_ID` and `QREDEX_CLIENT_SECRET` are required
-- `QREDEX_ENVIRONMENT` defaults to `production` when `QREDEX_BASE_URL` is not set
-- `QREDEX_BASE_URL` is treated as a non-production override and defaults `fromEnv()` to `development` when no explicit `QREDEX_ENVIRONMENT` is provided
+- `QREDEX_ENVIRONMENT` defaults to `production`
 
 ## Environment Selection
 
@@ -148,8 +146,6 @@ const developmentClient = Qredex.init({
   auth: { clientId, clientSecret },
 });
 ```
-
-`baseUrl` is an internal/testing override only. It is rejected on the default production path and should be used only with `environment: "staging"` or `environment: "development"`.
 
 ## Events And Observability
 

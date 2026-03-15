@@ -180,7 +180,6 @@ Rules:
 
 - production is the default
 - `environment` is the normal host-selection mechanism
-- `baseUrl` may exist as an internal/testing override for non-production environments
 - users should not need to pass a base URL in normal usage
 
 Avoid:

@@ -8,7 +8,6 @@
 
 - `QREDEX_CLIENT_ID`
 - `QREDEX_CLIENT_SECRET`
-- `QREDEX_BASE_URL`
 - `QREDEX_STORE_ID` for link/order/refund calls
 - optional `QREDEX_ENVIRONMENT`:
   - `production` (default)
@@ -29,9 +28,7 @@ Canonical host presets are built in:
 - `staging` -> `https://staging-api.qredex.com`
 - `development` -> `http://localhost:8080`
 
-`Qredex.fromEnv()` reads `QREDEX_CLIENT_ID`, `QREDEX_CLIENT_SECRET`, `QREDEX_BASE_URL`, and optional `QREDEX_ENVIRONMENT`.
-
-Use `QREDEX_BASE_URL` only as an internal/testing override with `QREDEX_ENVIRONMENT=staging` or `QREDEX_ENVIRONMENT=development`. If `QREDEX_BASE_URL` is set without `QREDEX_ENVIRONMENT`, `fromEnv()` treats it as a development override.
+`Qredex.fromEnv()` reads `QREDEX_CLIENT_ID`, `QREDEX_CLIENT_SECRET`, and optional `QREDEX_ENVIRONMENT`.
 
 ## 2. Creator Setup
 

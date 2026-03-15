@@ -392,8 +392,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
-      environment: "development",
-      baseUrl: "https://api.qredex.test",
+      environment: "staging",
       auth: {
         clientId: "client",
         clientSecret: "secret",
@@ -429,8 +428,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
-      environment: "development",
-      baseUrl: "https://api.qredex.test",
+      environment: "staging",
       auth: {
         clientId: "bad-client",
         clientSecret: "bad-secret",
@@ -466,8 +464,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
-      environment: "development",
-      baseUrl: "https://api.qredex.test",
+      environment: "staging",
       auth: {
         clientId: "client",
         clientSecret: "secret",
@@ -509,8 +506,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
-      environment: "development",
-      baseUrl: "https://api.qredex.test",
+      environment: "staging",
       auth: {
         clientId: "client",
         clientSecret: "secret",
@@ -535,8 +531,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
-      environment: "development",
-      baseUrl: "https://api.qredex.test",
+      environment: "staging",
       auth: {
         clientId: "client",
         clientSecret: "secret",
@@ -565,8 +560,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
-      environment: "development",
-      baseUrl: "https://api.qredex.test",
+      environment: "staging",
       auth: {
         type: "access_token",
         accessToken: "Bearer static-token",
@@ -577,11 +571,11 @@ describe("Qredex", () => {
     await client.creators.list();
 
     expect(calls).toHaveLength(1);
-    expect(String(calls[0]!.input)).toBe("https://api.qredex.test/api/v1/integrations/creators");
+    expect(String(calls[0]!.input)).toBe("https://staging-api.qredex.com/api/v1/integrations/creators");
     expect(getHeader(calls[0]!, "authorization")).toBe("Bearer static-token");
   });
 
-  it("defaults to the production API host when no baseUrl is provided", async () => {
+  it("defaults to the production API host when no environment is provided", async () => {
     const { calls, fetch } = createFetchMock([
       jsonResponse(200, {
         items: [],
@@ -605,21 +599,7 @@ describe("Qredex", () => {
     expect(String(calls[0]!.input)).toBe("https://api.qredex.com/api/v1/integrations/creators");
   });
 
-  it("rejects baseUrl overrides on the production path", () => {
-    expect(() =>
-      Qredex.init({
-        baseUrl: "https://api.qredex.test",
-        auth: {
-          type: "access_token",
-          accessToken: "prod-token",
-        },
-      }),
-    ).toThrowError(
-      "Qredex baseUrl overrides require environment to be 'staging' or 'development'.",
-    );
-  });
-
-  it("supports environment presets without requiring a baseUrl", async () => {
+  it("supports the staging environment preset", async () => {
     const { calls, fetch } = createFetchMock([
       jsonResponse(200, {
         items: [],
@@ -644,7 +624,7 @@ describe("Qredex", () => {
     expect(String(calls[0]!.input)).toBe("https://staging-api.qredex.com/api/v1/integrations/creators");
   });
 
-  it("supports the development environment preset without requiring a baseUrl", async () => {
+  it("supports the development environment preset", async () => {
     const { calls, fetch } = createFetchMock([
       jsonResponse(200, {
         items: [],
@@ -673,8 +653,7 @@ describe("Qredex", () => {
     const { calls, fetch } = createFetchMock([]);
 
     const client = Qredex.init({
-      environment: "development",
-      baseUrl: "https://api.qredex.test",
+      environment: "staging",
       auth: {
         clientId: "client",
         clientSecret: "secret",
@@ -722,8 +701,7 @@ describe("Qredex", () => {
     ]);
 
     const client = Qredex.init({
-      environment: "development",
-      baseUrl: "https://api.qredex.test",
+      environment: "staging",
       auth: {
         clientId: "client",
         clientSecret: "secret",

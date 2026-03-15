@@ -20,8 +20,6 @@ The SDK supports these built-in environments:
 
 `production` is the default.
 
-`baseUrl` is available only as an internal/testing override for non-production environments and should not be the normal integration path.
-
 ## Versioning And SemVer
 
 `qredex` follows semantic versioning.
