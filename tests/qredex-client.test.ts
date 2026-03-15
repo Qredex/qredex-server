@@ -36,7 +36,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = new QredexClient({
+    const client = QredexClient.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client-123",
@@ -213,7 +213,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = new QredexClient({
+    const client = QredexClient.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -301,7 +301,7 @@ describe("QredexClient", () => {
       ),
     ]);
 
-    const client = new QredexClient({
+    const client = QredexClient.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -337,7 +337,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = new QredexClient({
+    const client = QredexClient.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "bad-client",
@@ -373,7 +373,7 @@ describe("QredexClient", () => {
       }),
     ]);
 
-    const client = new QredexClient({
+    const client = QredexClient.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -415,7 +415,7 @@ describe("QredexClient", () => {
       ),
     ]);
 
-    const client = new QredexClient({
+    const client = QredexClient.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",
@@ -440,7 +440,7 @@ describe("QredexClient", () => {
       new TypeError("fetch failed"),
     ]);
 
-    const client = new QredexClient({
+    const client = QredexClient.init({
       baseUrl: "https://api.qredex.test",
       auth: {
         clientId: "client",

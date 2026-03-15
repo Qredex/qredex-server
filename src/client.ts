@@ -38,7 +38,11 @@ export class QredexClient {
   readonly orders: OrdersClient;
   readonly refunds: RefundsClient;
 
-  constructor(options: QredexClientOptions) {
+  static init(options: QredexClientOptions): QredexClient {
+    return new QredexClient(options);
+  }
+
+  private constructor(options: QredexClientOptions) {
     if (!options.baseUrl) {
       throw new ConfigurationError("QredexClient requires a baseUrl.");
     }

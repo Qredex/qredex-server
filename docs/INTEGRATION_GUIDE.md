@@ -16,7 +16,7 @@
 ```ts
 import { QredexClient } from "@qredex/sdk";
 
-export const client = new QredexClient({
+export const client = QredexClient.init({
   baseUrl: process.env.QREDEX_BASE_URL!,
   auth: {
     clientId: process.env.QREDEX_CLIENT_ID!,
