@@ -1,6 +1,6 @@
 # Errors
 
-`@qredex/sdk` normalizes Qredex failures into a small typed hierarchy.
+`@qredex/node` normalizes Qredex failures into a small typed hierarchy.
 
 ## Error Classes
 
@@ -36,7 +36,7 @@ Every `QredexError` may include:
 ## Example
 
 ```ts
-import { ConflictError, QredexClient } from "@qredex/sdk";
+import { ConflictError, QredexClient } from "@qredex/node";
 
 try {
   await client.refunds.recordRefund({

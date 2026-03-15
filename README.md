@@ -1,4 +1,4 @@
-# `@qredex/sdk`
+# `@qredex/node`
 
 Canonical Node.js server SDK for the Qredex Integrations API.
 
@@ -17,13 +17,13 @@ It does not include merchant dashboard APIs, internal APIs, Shopify OAuth/sessio
 ## Install
 
 ```bash
-npm install @qredex/sdk
+npm install @qredex/node
 ```
 
 ## Quick Start
 
 ```ts
-import { QredexClient } from "@qredex/sdk";
+import { QredexClient } from "@qredex/node";
 
 const client = QredexClient.init({
   auth: {

@@ -1,5 +1,5 @@
 {
-  "name": "@qredex/sdk",
+  "name": "@qredex/node",
   "version": "0.1.0",
   "description": "Canonical Node.js server SDK for the Qredex Integrations API.",
   "type": "module",

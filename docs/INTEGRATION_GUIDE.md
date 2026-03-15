@@ -2,7 +2,7 @@
 
 ## Scope
 
-`@qredex/sdk` is the canonical Node server SDK for authenticated Qredex integrations. It is intentionally limited to the Integrations API and machine-to-machine flows.
+`@qredex/node` is the canonical Node server SDK for authenticated Qredex integrations. It is intentionally limited to the Integrations API and machine-to-machine flows.
 
 ## Required Environment
 
@@ -17,7 +17,7 @@
 ## 1. Create The Client
 
 ```ts
-import { QredexClient } from "@qredex/sdk";
+import { QredexClient } from "@qredex/node";
 
 export const client = QredexClient.init({
   environment:
