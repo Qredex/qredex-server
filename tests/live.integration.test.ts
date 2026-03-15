@@ -76,6 +76,12 @@ describe.skipIf(!liveEnabled || missingEnv.length > 0)(
         total_price: 100,
       });
 
+      const listedOrders = await qredex.orders.list({
+        page: 0,
+        size: 20,
+      });
+      const orderDetails = await qredex.orders.getDetails(order.id);
+
       const refund = await qredex.refunds.recordRefund({
         store_id: process.env.QREDEX_LIVE_STORE_ID!,
         external_order_id: `codex-order-${suffix}`,
@@ -90,6 +96,9 @@ describe.skipIf(!liveEnabled || missingEnv.length > 0)(
       expect(iit.token.length).toBeGreaterThan(0);
       expect(pit.token.length).toBeGreaterThan(0);
       expect(order.external_order_id).toBe(`codex-order-${suffix}`);
+      expect(listedOrders.items.some((item) => item.id === order.id)).toBe(true);
+      expect(orderDetails.id).toBe(order.id);
+      expect(orderDetails.external_order_id).toBe(`codex-order-${suffix}`);
       expect(refund.external_order_id).toBe(`codex-order-${suffix}`);
     }, 60_000);
   },
