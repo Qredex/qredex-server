@@ -36,7 +36,7 @@ Every `QredexError` may include:
 ## Example
 
 ```ts
-import { ConflictError, Qredex } from "qredex";
+import { Qredex, QredexErrorCode, isConflictError } from "qredex";
 
 try {
   await qredex.refunds.recordRefund({
@@ -45,13 +45,44 @@ try {
     external_refund_id: "refund-100045-1",
   });
 } catch (error) {
-  if (error instanceof ConflictError) {
+  if (isConflictError(error)) {
     console.error(error.status, error.errorCode, error.requestId);
+
+    if (error.errorCode === QredexErrorCode.REJECTED_CROSS_SOURCE_DUPLICATE) {
+      console.error("Handle the business conflict explicitly.");
+    }
   }
 
   throw error;
 }
 ```
+
+## Helper Guards
+
+The SDK also exports:
+
+- `isApiError`
+- `isAuthenticationError`
+- `isAuthorizationError`
+- `isValidationError`
+- `isConflictError`
+- `isRateLimitError`
+- `isNetworkError`
+- `isConfigurationError`
+
+Use these when you want narrow error handling without relying on `instanceof` checks in every integration layer.
+
+## Common Error Code Constants
+
+The SDK also exports `QredexErrorCode` for common machine-handled values:
+
+- `INVALID_CLIENT`
+- `VALIDATION_ERROR`
+- `RATE_LIMITED`
+- `INTERNAL_ERROR`
+- `REJECTED_CROSS_SOURCE_DUPLICATE`
+
+This list is intentionally small and not guaranteed to be exhaustive for every possible platform response.
 
 ## Request And Trace IDs
 

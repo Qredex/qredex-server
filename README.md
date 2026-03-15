@@ -73,14 +73,27 @@ await qredex.orders.recordPaidOrder(request);
 await qredex.refunds.recordRefund(request);
 ```
 
+## Resource Capability Table
+
+| Resource | Methods | Typical scopes |
+| --- | --- | --- |
+| `creators` | `create`, `get`, `list` | `QredexScope.CREATORS_WRITE`, `QredexScope.CREATORS_READ` |
+| `links` | `create`, `get`, `list` | `QredexScope.LINKS_WRITE`, `QredexScope.LINKS_READ` |
+| `intents` | `issueInfluenceIntentToken`, `lockPurchaseIntent` | `QredexScope.INTENTS_WRITE` |
+| `orders` | `recordPaidOrder` | `QredexScope.ORDERS_WRITE` |
+| `refunds` | `recordRefund` | `QredexScope.ORDERS_WRITE` |
+
 If you want programmatic configuration instead of environment bootstrap:
 
 ```ts
+import { Qredex, QredexEnvironment, QredexScope } from "qredex";
+
 const qredex = Qredex.init({
-  environment: "staging",
+  environment: QredexEnvironment.STAGING,
   auth: {
     clientId: process.env.QREDEX_CLIENT_ID!,
     clientSecret: process.env.QREDEX_CLIENT_SECRET!,
+    scope: [QredexScope.CREATORS_WRITE, QredexScope.LINKS_WRITE],
   },
 });
 ```
@@ -103,6 +116,17 @@ If you want bootstrap to request specific scopes, set `QREDEX_SCOPE` as a space-
 
 ```bash
 export QREDEX_SCOPE="direct:creators:write direct:links:write"
+```
+
+If you want typed scope constants in code, use `QredexScope`:
+
+```ts
+import { QredexScope } from "qredex";
+
+const scopes = [
+  QredexScope.CREATORS_WRITE,
+  QredexScope.LINKS_WRITE,
+];
 ```
 
 You can also subscribe to sanitized events:
@@ -130,11 +154,19 @@ Event types include:
 - `retry_scheduled`
 - `validation_failed`
 
+For advanced integrations, the SDK also exports:
+
+- `QredexEnvironment`
+- `QredexScope`
+- `QredexHeader`
+- `QredexErrorCode`
+
 ## Retry Behavior
 
 - auth token issuance retries internally
 - read retries are opt-in and apply only to `GET` and `HEAD`
 - writes are not retried automatically
+- use stable external IDs for order/refund replays instead of adding write retries blindly
 
 ```ts
 const qredex = Qredex.init({
@@ -145,6 +177,37 @@ const qredex = Qredex.init({
     maxDelayMs: 1_000,
   },
 });
+```
+
+## Error Handling
+
+Use the typed guards when you want branch-safe error handling without `instanceof` chains:
+
+```ts
+import {
+  Qredex,
+  QredexErrorCode,
+  isConflictError,
+  isValidationError,
+} from "qredex";
+
+try {
+  await qredex.creators.create({
+    handle: "alice",
+  });
+} catch (error) {
+  if (isValidationError(error)) {
+    console.error(error.errorCode, error.requestId);
+  }
+
+  if (isConflictError(error)) {
+    if (error.errorCode === QredexErrorCode.REJECTED_CROSS_SOURCE_DUPLICATE) {
+      console.error("Conflict needs business handling.");
+    }
+  }
+
+  throw error;
+}
 ```
 
 ## Canonical Flow
@@ -160,6 +223,7 @@ const qredex = Qredex.init({
 
 - [Integration Guide](./docs/INTEGRATION_GUIDE.md)
 - [Golden Path](./docs/GOLDEN_PATH.md)
+- [Common Setups](./docs/SETUPS.md)
 - [Error Handling](./docs/ERRORS.md)
 - [Support Policy](./docs/SUPPORT_POLICY.md)
 - [Release Guide](./docs/RELEASING.md)
@@ -179,6 +243,8 @@ const qredex = Qredex.init({
 - `npm run test:live` runs the opt-in live integration suite
 
 Live tests are skipped unless `QREDEX_LIVE_ENABLED=1` and the required `QREDEX_LIVE_*` variables are set.
+
+Start from [`.env.live.example`](./.env.live.example) when wiring live test credentials.
 
 ## License
 

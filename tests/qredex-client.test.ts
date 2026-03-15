@@ -6,8 +6,16 @@ import {
   ConflictError,
   NetworkError,
   Qredex,
+  QredexEnvironment,
+  QredexErrorCode,
+  QredexHeader,
+  QredexScope,
   ValidationError as QredexValidationError,
   ValidationError,
+  isAuthenticationError,
+  isConflictError,
+  isNetworkError,
+  isValidationError,
 } from "../src";
 import {
   createFetchMock,
@@ -26,6 +34,30 @@ const UUIDS = {
 };
 
 describe("Qredex", () => {
+  it("exports canonical typed scope constants", () => {
+    expect(QredexEnvironment.PRODUCTION).toBe("production");
+    expect(QredexEnvironment.STAGING).toBe("staging");
+    expect(QredexEnvironment.DEVELOPMENT).toBe("development");
+    expect(QredexScope.CREATORS_WRITE).toBe("direct:creators:write");
+    expect(QredexScope.LINKS_WRITE).toBe("direct:links:write");
+    expect(QredexScope.INTENTS_WRITE).toBe("direct:intents:write");
+    expect(QredexScope.ORDERS_WRITE).toBe("direct:orders:write");
+    expect(QredexHeader.REQUEST_ID).toBe("x-request-id");
+    expect(QredexHeader.TRACE_ID).toBe("x-trace-id");
+    expect(QredexErrorCode.INVALID_CLIENT).toBe("invalid_client");
+    expect(QredexErrorCode.REJECTED_CROSS_SOURCE_DUPLICATE).toBe(
+      "REJECTED_CROSS_SOURCE_DUPLICATE",
+    );
+  });
+
+  it("exports typed error guards", () => {
+    expect(isAuthenticationError(new AuthenticationError("nope"))).toBe(true);
+    expect(isConflictError(new ConflictError("nope"))).toBe(true);
+    expect(isValidationError(new ValidationError("nope"))).toBe(true);
+    expect(isNetworkError(new NetworkError("nope"))).toBe(true);
+    expect(isConflictError(new ApiError("generic"))).toBe(false);
+  });
+
   it("builds a client from environment variables and forwards bootstrap scope", async () => {
     const { calls, fetch } = createFetchMock([
       jsonResponse(200, {

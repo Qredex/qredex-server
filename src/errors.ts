@@ -59,3 +59,35 @@ export class NetworkError extends QredexError {}
 export function isQredexError(error: unknown): error is QredexError {
   return error instanceof QredexError;
 }
+
+export function isApiError(error: unknown): error is ApiError {
+  return error instanceof ApiError;
+}
+
+export function isAuthenticationError(error: unknown): error is AuthenticationError {
+  return error instanceof AuthenticationError;
+}
+
+export function isAuthorizationError(error: unknown): error is AuthorizationError {
+  return error instanceof AuthorizationError;
+}
+
+export function isValidationError(error: unknown): error is ValidationError {
+  return error instanceof ValidationError;
+}
+
+export function isConflictError(error: unknown): error is ConflictError {
+  return error instanceof ConflictError;
+}
+
+export function isRateLimitError(error: unknown): error is RateLimitError {
+  return error instanceof RateLimitError;
+}
+
+export function isNetworkError(error: unknown): error is NetworkError {
+  return error instanceof NetworkError;
+}
+
+export function isConfigurationError(error: unknown): error is ConfigurationError {
+  return error instanceof ConfigurationError;
+}

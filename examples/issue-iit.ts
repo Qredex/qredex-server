@@ -1,10 +1,10 @@
-import { Qredex } from "../src";
+import { Qredex, QredexScope } from "../src";
 
 const qredex = Qredex.init({
   auth: {
     clientId: process.env.QREDEX_CLIENT_ID!,
     clientSecret: process.env.QREDEX_CLIENT_SECRET!,
-    scope: ["direct:intents:write"],
+    scope: [QredexScope.INTENTS_WRITE],
   },
 });
 

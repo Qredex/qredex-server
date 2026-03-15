@@ -25,6 +25,8 @@ export const qredex = Qredex.bootstrap();
 
 `Qredex.bootstrap()` reads `QREDEX_CLIENT_ID`, `QREDEX_CLIENT_SECRET`, optional `QREDEX_SCOPE`, and optional `QREDEX_ENVIRONMENT`.
 
+Use `QREDEX_SCOPE` when you want bootstrap to request explicit direct scopes.
+
 ## 2. Creator Setup
 
 Create creators through `qredex.creators.create()`. Keep creator handles stable and merchant-scoped.
@@ -112,6 +114,7 @@ const refund = await qredex.refunds.recordRefund({
 - Expect the SDK to reject obviously invalid request shapes locally before making a network call.
 - Subscribe to `qredex.events` or use `onEvent` for sanitized request, auth, retry, and validation lifecycle visibility.
 - Auth retries happen internally for token issuance. Read retries are opt-in and only apply to `GET` and `HEAD`.
+- For writes, prefer replaying stable `external_order_id` and `external_refund_id` over automatic retries.
 - Never log `client_secret`, bearer tokens, IIT, or PIT in plaintext.
 - Keep store scoping correct on every write.
 

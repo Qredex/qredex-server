@@ -11,6 +11,7 @@
    - `npm test`
    - `npm run build`
 5. Run the live integration suite against staging:
+   - start from [`.env.live.example`](../.env.live.example)
    - `QREDEX_LIVE_ENABLED=1`
    - `QREDEX_LIVE_ENVIRONMENT=staging`
    - `QREDEX_LIVE_CLIENT_ID=...`
