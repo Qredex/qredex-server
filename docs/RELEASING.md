@@ -1,4 +1,4 @@
-# Releasing `qredex`
+# Releasing `@qredex/server`
 
 This repo is a single-package Node SDK. The release source of truth is:
 
@@ -30,7 +30,7 @@ The automated release flow tags and publishes only when those version files are 
 
 ## Automated GitHub Flow
 
-The steady-state release model is GitHub-driven Trusted Publishing. For the unscoped `qredex` package, the very first public publish may need a one-time local bootstrap publish from an npm owner account so the package exists in npm package settings before Trusted Publishing can be attached.
+The steady-state release model is GitHub-driven Trusted Publishing for `@qredex/server`.
 
 When a version bump lands on `main`:
 
@@ -51,24 +51,16 @@ The publish workflow is rerunnable. If the version is already published on npm, 
 
 ## Trusted Publishing Setup
 
-`qredex` uses npm Trusted Publishing. Do not configure `NPM_TOKEN` for this release flow.
+`@qredex/server` uses npm Trusted Publishing. Do not configure `NPM_TOKEN` for this release flow.
 
 Configure npm once for the package:
 
-1. Open the npm package settings for `qredex`.
+1. Open the npm package settings for `@qredex/server`.
 2. Add a Trusted Publisher for this GitHub repository:
    - repository: `Qredex/qredex-node`
    - workflow file: `.github/workflows/publish-npm.yml`
    - branch: `main`
 3. Ensure GitHub Actions is enabled for the repository.
-
-If `qredex` has never been published before, do this once first from an npm owner machine:
-
-1. `npm login`
-2. `npm whoami`
-3. `npm publish --access public`
-
-After that bootstrap publish succeeds, switch back to the GitHub Actions flow for all normal releases.
 
 The publish workflow already has:
 
@@ -90,10 +82,11 @@ The workflow will:
 - fetch tags
 - verify that the checked-out commit matches the release tag for the current package version
 - skip cleanly if the commit is not the tagged release commit
-- skip cleanly if `qredex@<version>` is already published
+- skip cleanly if `@qredex/server@<version>` is already published
 
 ## Notes
 
 - `npm run release:check` is the pre-publish verification path used by automation.
+- `npm test` and `npm run release:check` intentionally exclude the live integration suite.
 - `npm run publish:npm` is only for the GitHub Actions release workflow.
 - `prepublishOnly` still runs `npm run release:check` as a local safety net.

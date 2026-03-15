@@ -18,7 +18,7 @@
 ## 1. Create The Client
 
 ```ts
-import { Qredex } from "qredex";
+import { Qredex } from "@qredex/server";
 
 export const qredex = Qredex.bootstrap();
 ```

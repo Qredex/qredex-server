@@ -7,7 +7,7 @@ These are practical ways teams commonly wire `qredex` into backend services.
 Use this when a backend service is responsible for merchant onboarding, creator creation, and link provisioning.
 
 ```ts
-import { Qredex, QredexScope } from "qredex";
+import { Qredex, QredexScope } from "@qredex/server";
 
 export const qredex = Qredex.init({
   auth: {
@@ -26,7 +26,7 @@ export const qredex = Qredex.init({
 Use this when a backend service issues IIT, locks PIT, and records paid orders.
 
 ```ts
-import { Qredex, QredexScope } from "qredex";
+import { Qredex, QredexScope } from "@qredex/server";
 
 export const qredex = Qredex.init({
   auth: {
@@ -45,7 +45,7 @@ export const qredex = Qredex.init({
 Use this when refunds are recorded by a back-office process or scheduled worker.
 
 ```ts
-import { Qredex, QredexScope } from "qredex";
+import { Qredex, QredexScope } from "@qredex/server";
 
 export const qredex = Qredex.init({
   auth: {
@@ -61,7 +61,7 @@ export const qredex = Qredex.init({
 If several internal services share the same Qredex auth and environment, keep one shared config object and initialize from it explicitly.
 
 ```ts
-import { Qredex, QredexEnvironment, QredexScope } from "qredex";
+import { Qredex, QredexEnvironment, QredexScope } from "@qredex/server";
 
 const sharedQredexConfig = {
   environment: QredexEnvironment.STAGING,

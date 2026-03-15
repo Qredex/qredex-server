@@ -19,6 +19,6 @@ Qredex will acknowledge receipt as quickly as possible and coordinate remediatio
 
 ## Supported Versions
 
-Security fixes are prioritized for the latest published version of `qredex`.
+Security fixes are prioritized for the latest published version of `@qredex/server`.
 
 If a vulnerability affects older versions, Qredex may ask integrators to upgrade to a supported release rather than backporting fixes.

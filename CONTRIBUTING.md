@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve `qredex`.
+Thanks for helping improve `@qredex/server`.
 
 ## Development Setup
 

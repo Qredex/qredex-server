@@ -91,8 +91,8 @@ export class Transport {
     this.logger = options.logger;
     this.defaultHeaders = options.defaultHeaders ?? {};
     this.userAgent = options.userAgentSuffix
-      ? `qredex ${options.userAgentSuffix}`.trim()
-      : "qredex";
+      ? `@qredex/server ${options.userAgentSuffix}`.trim()
+      : "@qredex/server";
   }
 
   async request<T>(request: TransportRequest): Promise<T> {
@@ -102,7 +102,7 @@ export class Transport {
 
     const headers = new Headers(this.defaultHeaders);
     headers.set("accept", "application/json");
-    headers.set("x-qredex-sdk", "qredex");
+    headers.set("x-qredex-sdk", "@qredex/server");
 
     if (!headers.has("user-agent")) {
       headers.set("user-agent", this.userAgent);

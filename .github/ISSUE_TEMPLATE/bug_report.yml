@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a reproducible problem in the qredex Node.js SDK.
+description: Report a reproducible problem in the @qredex/server Node.js SDK.
 title: "[Bug]: "
 labels:
   - bug

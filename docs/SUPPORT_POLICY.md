@@ -2,7 +2,7 @@
 
 ## Runtime Support
 
-`qredex` supports:
+`@qredex/server` supports:
 
 - Node.js `18.x`
 - Node.js `20.x`
@@ -22,7 +22,7 @@ The SDK supports these built-in environments:
 
 ## Versioning And SemVer
 
-`qredex` follows semantic versioning.
+`@qredex/server` follows semantic versioning.
 
 - patch releases: bug fixes, docs fixes, internal hardening without public API breaks
 - minor releases: backward-compatible public API additions

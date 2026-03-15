@@ -36,7 +36,7 @@ Every `QredexError` may include:
 ## Example
 
 ```ts
-import { Qredex, QredexErrorCode, isConflictError } from "qredex";
+import { Qredex, QredexErrorCode, isConflictError } from "@qredex/server";
 
 try {
   await qredex.refunds.recordRefund({

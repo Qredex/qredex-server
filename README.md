@@ -1,10 +1,10 @@
-# `qredex`
+# `@qredex/server`
 
 [![CI](https://github.com/Qredex/qredex-node/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Qredex/qredex-node/actions/workflows/ci.yml)
 [![Release](https://github.com/Qredex/qredex-node/actions/workflows/publish-npm.yml/badge.svg)](https://github.com/Qredex/qredex-node/actions/workflows/publish-npm.yml)
-[![npm version](https://img.shields.io/npm/v/qredex.svg)](https://www.npmjs.com/package/qredex)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/qredex)](https://bundlephobia.com/package/qredex)
-[![license](https://img.shields.io/npm/l/qredex)](./LICENSE)
+[![npm version](https://img.shields.io/npm/v/%40qredex%2Fserver.svg)](https://www.npmjs.com/package/@qredex/server)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/%40qredex%2Fserver)](https://bundlephobia.com/package/@qredex/server)
+[![license](https://img.shields.io/npm/l/%40qredex%2Fserver)](./LICENSE)
 
 Canonical Node.js server SDK for Qredex machine-to-machine integrations.
 
@@ -13,7 +13,7 @@ Canonical Node.js server SDK for Qredex machine-to-machine integrations.
 ## Install
 
 ```bash
-npm install qredex
+npm install @qredex/server
 ```
 
 ## Quick Start
@@ -32,7 +32,7 @@ Optional environment configuration:
 Then use the SDK:
 
 ```ts
-import { Qredex } from "qredex";
+import { Qredex } from "@qredex/server";
 
 const qredex = Qredex.bootstrap();
 
@@ -93,7 +93,7 @@ await qredex.refunds.recordRefund(request);
 If you want programmatic configuration instead of environment bootstrap:
 
 ```ts
-import { Qredex, QredexEnvironment, QredexScope } from "qredex";
+import { Qredex, QredexEnvironment, QredexScope } from "@qredex/server";
 
 const qredex = Qredex.init({
   environment: QredexEnvironment.STAGING,
@@ -128,7 +128,7 @@ export QREDEX_SCOPE="direct:creators:write direct:links:write"
 If you want typed scope constants in code, use `QredexScope`:
 
 ```ts
-import { QredexScope } from "qredex";
+import { QredexScope } from "@qredex/server";
 
 const scopes = [
   QredexScope.CREATORS_WRITE,
@@ -196,7 +196,7 @@ import {
   QredexErrorCode,
   isConflictError,
   isValidationError,
-} from "qredex";
+} from "@qredex/server";
 
 try {
   await qredex.creators.create({
@@ -251,7 +251,7 @@ try {
 
 ## Testing
 
-- `npm test` runs unit tests and local mock-server HTTP integration tests
+- `npm test` runs unit tests and local mock-server HTTP integration tests only
 - `npm run test:live` runs the opt-in live integration suite
 
 Live tests are skipped unless `QREDEX_LIVE_ENABLED=1` and the required `QREDEX_LIVE_*` variables are set.

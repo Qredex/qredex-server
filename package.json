@@ -1,5 +1,5 @@
 {
-  "name": "qredex",
+  "name": "@qredex/server",
   "version": "0.1.1",
   "description": "Canonical Node.js server SDK for the Qredex Integrations API.",
   "repository": {
@@ -45,7 +45,7 @@
     "release:check": "npm run typecheck && npm test && npm run build",
     "release:version": "node ./scripts/release-version.mjs",
     "publish:npm": "node ./scripts/publish-npm.mjs",
-    "test": "vitest run",
+    "test": "vitest run --exclude tests/live.integration.test.ts",
     "test:live": "vitest run tests/live.integration.test.ts",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
@@ -54,6 +54,7 @@
   },
   "keywords": [
     "qredex",
+    "server-sdk",
     "sdk",
     "typescript",
     "node",
