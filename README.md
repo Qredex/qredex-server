@@ -207,7 +207,7 @@ const client = QredexClient.init({
 6. Record the paid order.
 7. Record refunds later with stable external refund IDs.
 
-See [docs/INTEGRATION_GUIDE.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/INTEGRATION_GUIDE.md) for the full flow and [docs/ERRORS.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/ERRORS.md) for failure handling.
+See [docs/INTEGRATION_GUIDE.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/INTEGRATION_GUIDE.md) for the full flow, [docs/GOLDEN_PATH.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/GOLDEN_PATH.md) for the merchant adoption path, and [docs/ERRORS.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/ERRORS.md) for failure handling.
 
 ## Testing
 
@@ -221,6 +221,10 @@ To target staging, set `QREDEX_LIVE_ENVIRONMENT=staging` before `npm run test:li
 ## Releasing
 
 See [docs/RELEASING.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/RELEASING.md) for the release checklist and publish flow.
+
+## Support
+
+See [docs/SUPPORT_POLICY.md](/Users/bobai/Workspace/Qredex/qredex-node/docs/SUPPORT_POLICY.md) for supported Node versions, semver expectations, deprecation policy, and environment support.
 
 ## Examples
 
