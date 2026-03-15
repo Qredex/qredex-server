@@ -37,9 +37,11 @@ import {
   validateListCreatorsRequest,
 } from "../internal/validation";
 
+/** Creator resource operations for the Integrations API. */
 export class CreatorsClient {
   constructor(private readonly http: HttpClient) {}
 
+  /** Creates a creator record with canonical Qredex field names. */
   async create(
     request: CreateCreatorRequest,
     options?: QredexCallOptions,
@@ -62,6 +64,7 @@ export class CreatorsClient {
     });
   }
 
+  /** Fetches a single creator by `creator_id`. */
   async get(
     request: GetCreatorRequest,
     options?: QredexCallOptions,
@@ -81,6 +84,7 @@ export class CreatorsClient {
     });
   }
 
+  /** Lists creators with optional filters and pagination. */
   async list(
     request: ListCreatorsRequest = {},
     options?: QredexCallOptions,

@@ -27,9 +27,11 @@ import { ValidationError } from "../errors";
 import { HttpClient } from "../internal/http-client";
 import { validateRecordRefundRequest } from "../internal/validation";
 
+/** Refund ingestion operations for previously recorded orders. */
 export class RefundsClient {
   constructor(private readonly http: HttpClient) {}
 
+  /** Records a refund event using stable external refund and order identifiers. */
   async recordRefund(
     request: RecordRefundRequest,
     options?: QredexCallOptions,

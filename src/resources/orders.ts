@@ -37,9 +37,11 @@ import {
   validateRecordPaidOrderRequest,
 } from "../internal/validation";
 
+/** Order attribution read and paid-order ingestion operations. */
 export class OrdersClient {
   constructor(private readonly http: HttpClient) {}
 
+  /** Lists order attribution records with optional pagination. */
   async list(
     request: ListOrdersRequest = {},
     options?: QredexCallOptions,
@@ -61,6 +63,7 @@ export class OrdersClient {
     });
   }
 
+  /** Fetches the detailed order attribution record for a single attribution ID. */
   async getDetails(
     orderAttributionId: string,
     options?: QredexCallOptions,
@@ -81,6 +84,7 @@ export class OrdersClient {
     });
   }
 
+  /** Records a paid order event into the Integrations API. */
   async recordPaidOrder(
     request: RecordPaidOrderRequest,
     options?: QredexCallOptions,

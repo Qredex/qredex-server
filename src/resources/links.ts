@@ -37,9 +37,11 @@ import {
   validateListLinksRequest,
 } from "../internal/validation";
 
+/** Link resource operations for the Integrations API. */
 export class LinksClient {
   constructor(private readonly http: HttpClient) {}
 
+  /** Creates a trackable link for a creator and store. */
   async create(
     request: CreateLinkRequest,
     options?: QredexCallOptions,
@@ -60,6 +62,7 @@ export class LinksClient {
     });
   }
 
+  /** Fetches a single link by `link_id`. */
   async get(
     request: GetLinkRequest,
     options?: QredexCallOptions,
@@ -79,6 +82,7 @@ export class LinksClient {
     });
   }
 
+  /** Lists links with optional filters and pagination. */
   async list(
     request: ListLinksRequest = {},
     options?: QredexCallOptions,

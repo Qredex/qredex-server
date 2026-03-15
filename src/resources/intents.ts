@@ -35,9 +35,11 @@ import {
   validateLockPurchaseIntentRequest,
 } from "../internal/validation";
 
+/** IIT and PIT intent operations for canonical machine flows. */
 export class IntentsClient {
   constructor(private readonly http: HttpClient) {}
 
+  /** Issues an Influence Intent Token (IIT) for eligible backend attribution flows. */
   async issueInfluenceIntentToken(
     request: IssueInfluenceIntentTokenRequest,
     options?: QredexCallOptions,
@@ -61,6 +63,7 @@ export class IntentsClient {
     });
   }
 
+  /** Locks a Purchase Intent Token (PIT) for the canonical machine purchase flow. */
   async lockPurchaseIntent(
     request: CreateAndLockPurchaseIntentRequest,
     options?: QredexCallOptions,

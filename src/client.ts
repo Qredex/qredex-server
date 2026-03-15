@@ -41,9 +41,11 @@ import { LinksClient } from "./resources/links";
 import { OrdersClient } from "./resources/orders";
 import { RefundsClient } from "./resources/refunds";
 
+/** Auth helper surface for explicit token issuance and cache control. */
 export class QredexAuthClient {
   constructor(private readonly tokenProvider: TokenProvider) {}
 
+  /** Issues a client-credentials token explicitly on the current client configuration. */
   async issueToken(
     request: IssueTokenRequest = {},
     options?: QredexCallOptions,
@@ -51,11 +53,13 @@ export class QredexAuthClient {
     return this.tokenProvider.issueToken(request, options);
   }
 
+  /** Clears the configured token cache so the next auth call fetches a fresh token. */
   async clearTokenCache(): Promise<void> {
     return this.tokenProvider.clearTokenCache();
   }
 }
 
+/** Public entrypoint for the Qredex Integrations API server SDK. */
 export class Qredex {
   readonly auth: QredexAuthClient;
   readonly creators: CreatorsClient;
@@ -65,10 +69,16 @@ export class Qredex {
   readonly orders: OrdersClient;
   readonly refunds: RefundsClient;
 
+  /** Creates a client from explicit configuration and fails fast on invalid options. */
   static init(options: QredexOptions): Qredex {
     return new Qredex(options);
   }
 
+  /**
+   * Creates a client from environment variables.
+   * Reads `QREDEX_CLIENT_ID`, `QREDEX_CLIENT_SECRET`, optional `QREDEX_SCOPE`,
+   * and optional `QREDEX_ENVIRONMENT`, then validates the resulting configuration eagerly.
+   */
   static bootstrap(
     env: NodeJS.ProcessEnv = process.env,
     overrides: Omit<QredexOptions, "auth" | "environment"> = {},

@@ -21,6 +21,7 @@
  *  If you need additional information or have any questions, please email: copyright@qredex.com
  */
 
+/** Common structured metadata preserved on SDK errors. */
 export interface QredexErrorDetails {
   status?: number;
   errorCode?: string;
@@ -31,6 +32,7 @@ export interface QredexErrorDetails {
   cause?: unknown;
 }
 
+/** Base SDK error with preserved HTTP and Qredex metadata where available. */
 export class QredexError extends Error {
   readonly status?: number;
   readonly errorCode?: string;
@@ -53,18 +55,25 @@ export class QredexError extends Error {
   }
 }
 
+/** Thrown when SDK configuration is invalid before a request is made. */
 export class ConfigurationError extends QredexError {}
 
+/** Base API error for non-network responses from Qredex. */
 export class ApiError extends QredexError {}
 
+/** API authentication failure, typically invalid credentials or token state. */
 export class AuthenticationError extends ApiError {}
 
+/** API authorization failure due to missing scope or denied access. */
 export class AuthorizationError extends ApiError {}
 
+/** SDK or API validation failure for invalid request input. */
 export class ValidationError extends ApiError {}
 
+/** API conflict or policy rejection, such as duplicate or cross-source conflicts. */
 export class ConflictError extends ApiError {}
 
+/** API rate-limit response with optional `retry-after` metadata. */
 export class RateLimitError extends ApiError {
   readonly retryAfterSeconds?: number;
 
@@ -77,40 +86,50 @@ export class RateLimitError extends ApiError {
   }
 }
 
+/** Network or transport failure before a valid API response is received. */
 export class NetworkError extends QredexError {}
 
+/** Type guard for any Qredex SDK error. */
 export function isQredexError(error: unknown): error is QredexError {
   return error instanceof QredexError;
 }
 
+/** Type guard for API-originated Qredex errors. */
 export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError;
 }
 
+/** Type guard for authentication failures. */
 export function isAuthenticationError(error: unknown): error is AuthenticationError {
   return error instanceof AuthenticationError;
 }
 
+/** Type guard for authorization failures. */
 export function isAuthorizationError(error: unknown): error is AuthorizationError {
   return error instanceof AuthorizationError;
 }
 
+/** Type guard for validation failures. */
 export function isValidationError(error: unknown): error is ValidationError {
   return error instanceof ValidationError;
 }
 
+/** Type guard for conflict or policy rejection failures. */
 export function isConflictError(error: unknown): error is ConflictError {
   return error instanceof ConflictError;
 }
 
+/** Type guard for rate-limit failures. */
 export function isRateLimitError(error: unknown): error is RateLimitError {
   return error instanceof RateLimitError;
 }
 
+/** Type guard for network failures. */
 export function isNetworkError(error: unknown): error is NetworkError {
   return error instanceof NetworkError;
 }
 
+/** Type guard for configuration failures. */
 export function isConfigurationError(error: unknown): error is ConfigurationError {
   return error instanceof ConfigurationError;
 }

@@ -25,6 +25,7 @@ export type MaybePromise<T> = T | Promise<T>;
 
 export type QredexEnvironment = "production" | "staging" | "development";
 
+/** Injectable clock used for deterministic tests and token timing. */
 export interface QredexClock {
   now(): number;
 }
@@ -124,10 +125,12 @@ export interface OAuthTokenResponse {
   scope?: string;
 }
 
+/** Optional token issuance overrides for explicit client-credentials token requests. */
 export interface IssueTokenRequest {
   scope?: DirectScope[] | string;
 }
 
+/** Sanitized token issuance metadata exposed through auth callbacks. */
 export interface TokenIssuedEvent {
   token_type: string;
   expires_in: number;
@@ -136,6 +139,7 @@ export interface TokenIssuedEvent {
   expires_at: string;
 }
 
+/** Normalized cached access token shape used by custom token caches. */
 export interface CachedAccessToken {
   accessToken: string;
   tokenType: string;
@@ -143,12 +147,14 @@ export interface CachedAccessToken {
   scope?: string;
 }
 
+/** Pluggable token cache for client-credentials auth. */
 export interface QredexTokenCache {
   get(): MaybePromise<CachedAccessToken | null>;
   set(token: CachedAccessToken): MaybePromise<void>;
   clear(): MaybePromise<void>;
 }
 
+/** Optional logger used for sanitized SDK diagnostics. */
 export interface QredexLogger {
   debug?(message: string, meta?: Record<string, unknown>): void;
   info?(message: string, meta?: Record<string, unknown>): void;
@@ -156,16 +162,19 @@ export interface QredexLogger {
   error?(message: string, meta?: Record<string, unknown>): void;
 }
 
+/** Best-effort lifecycle hook for sanitized SDK request, auth, retry, and validation events. */
 export type QredexEventHook = (
   event: QredexEvent,
 ) => MaybePromise<void>;
 
+/** Retry policy for auth token acquisition or opt-in read retries. */
 export interface QredexRetryPolicy {
   maxAttempts?: number;
   baseDelayMs?: number;
   maxDelayMs?: number;
 }
 
+/** Client-credentials auth configuration for machine-to-machine integrations. */
 export interface ClientCredentialsAuthOptions {
   type?: "client_credentials";
   clientId: string;
@@ -177,6 +186,7 @@ export interface ClientCredentialsAuthOptions {
   onTokenIssued?: (event: TokenIssuedEvent) => MaybePromise<void>;
 }
 
+/** Static or lazily resolved bearer token auth configuration. */
 export interface AccessTokenAuthOptions {
   type: "access_token";
   accessToken: string | (() => MaybePromise<string>);
@@ -186,6 +196,10 @@ export type QredexAuthOptions =
   | ClientCredentialsAuthOptions
   | AccessTokenAuthOptions;
 
+/**
+ * Per-request overrides for timeout, cancellation, correlation IDs, and custom headers.
+ * Use `requestId` and `traceId` instead of raw correlation headers.
+ */
 export interface QredexCallOptions {
   signal?: AbortSignal;
   timeoutMs?: number;
@@ -194,6 +208,10 @@ export interface QredexCallOptions {
   headers?: Record<string, string>;
 }
 
+/**
+ * Top-level SDK configuration.
+ * `readRetry` only applies to `GET` and `HEAD`; writes are never retried automatically.
+ */
 export interface QredexOptions {
   environment?: QredexEnvironment;
   auth: QredexAuthOptions;
