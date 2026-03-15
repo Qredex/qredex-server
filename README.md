@@ -1,7 +1,7 @@
 # `qredex`
 
 [![CI](https://github.com/Qredex/qredex-node/actions/workflows/ci.yml/badge.svg)](https://github.com/Qredex/qredex-node/actions/workflows/ci.yml)
-[![Publish](https://github.com/Qredex/qredex-node/actions/workflows/publish.yml/badge.svg)](https://github.com/Qredex/qredex-node/actions/workflows/publish.yml)
+[![Publish](https://github.com/Qredex/qredex-node/actions/workflows/publish-npm.yml/badge.svg)](https://github.com/Qredex/qredex-node/actions/workflows/publish-npm.yml)
 [![npm version](https://img.shields.io/npm/v/qredex)](https://www.npmjs.com/package/qredex)
 [![License](https://img.shields.io/npm/l/qredex)](./LICENSE)
 
