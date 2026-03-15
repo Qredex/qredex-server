@@ -1,9 +1,10 @@
 # `qredex`
 
-[![CI](https://github.com/Qredex/qredex-node/actions/workflows/ci.yml/badge.svg)](https://github.com/Qredex/qredex-node/actions/workflows/ci.yml)
-[![Publish](https://github.com/Qredex/qredex-node/actions/workflows/publish-npm.yml/badge.svg)](https://github.com/Qredex/qredex-node/actions/workflows/publish-npm.yml)
-[![npm version](https://img.shields.io/npm/v/qredex)](https://www.npmjs.com/package/qredex)
-[![License](https://img.shields.io/npm/l/qredex)](./LICENSE)
+[![CI](https://github.com/Qredex/qredex-node/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Qredex/qredex-node/actions/workflows/ci.yml)
+[![Release](https://github.com/Qredex/qredex-node/actions/workflows/publish-npm.yml/badge.svg)](https://github.com/Qredex/qredex-node/actions/workflows/publish-npm.yml)
+[![npm version](https://img.shields.io/npm/v/qredex.svg)](https://www.npmjs.com/package/qredex)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/qredex)](https://bundlephobia.com/package/qredex)
+[![license](https://img.shields.io/npm/l/qredex)](./LICENSE)
 
 Canonical Node.js server SDK for Qredex machine-to-machine integrations.
 

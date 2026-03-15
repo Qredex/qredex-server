@@ -38,7 +38,7 @@ jobs:
         with:
           ref: ${{ github.event.inputs.release_ref || github.event.workflow_run.head_sha || github.ref }}
           fetch-depth: 0
-          persist-credentials: false
+          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
