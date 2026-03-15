@@ -30,6 +30,8 @@ The automated release flow tags and publishes only when those version files are 
 
 ## Automated GitHub Flow
 
+The steady-state release model is GitHub-driven Trusted Publishing. For the unscoped `qredex` package, the very first public publish may need a one-time local bootstrap publish from an npm owner account so the package exists in npm package settings before Trusted Publishing can be attached.
+
 When a version bump lands on `main`:
 
 1. [`tag-release-on-version-change.yml`](../.github/workflows/tag-release-on-version-change.yml)
@@ -59,6 +61,14 @@ Configure npm once for the package:
    - workflow file: `.github/workflows/publish-npm.yml`
    - branch: `main`
 3. Ensure GitHub Actions is enabled for the repository.
+
+If `qredex` has never been published before, do this once first from an npm owner machine:
+
+1. `npm login`
+2. `npm whoami`
+3. `npm publish --access public`
+
+After that bootstrap publish succeeds, switch back to the GitHub Actions flow for all normal releases.
 
 The publish workflow already has:
 

@@ -25,6 +25,7 @@ Set these environment variables:
 
 Optional environment configuration:
 
+- `QREDEX_STORE_ID` for flows that create links or record orders for a specific store
 - `QREDEX_SCOPE`
 - `QREDEX_ENVIRONMENT` defaults to `production`
 
@@ -232,6 +233,9 @@ try {
 - [Common Setups](./docs/SETUPS.md)
 - [Error Handling](./docs/ERRORS.md)
 - [Support Policy](./docs/SUPPORT_POLICY.md)
+- [Contributing](./CONTRIBUTING.md)
+- [Code of Conduct](./CODE_OF_CONDUCT.md)
+- [Security Policy](./SECURITY.md)
 - [Release Guide](./docs/RELEASING.md)
 
 ## Examples
