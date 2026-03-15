@@ -1,0 +1,79 @@
+name: Publish package to npm
+run-name: >-
+  Publish npm from ${{ github.event.inputs.release_ref || github.event.workflow_run.head_sha || github.ref_name }}
+
+on:
+  workflow_run:
+    workflows:
+      - Create release tag from version bump
+    types:
+      - completed
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      release_ref:
+        description: Existing release tag or commit to publish with the latest workflow
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: npm-publish-${{ github.event.inputs.release_ref || github.ref || github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.inputs.release_ref || github.event.workflow_run.head_sha || github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.14.0
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Setup npm CLI
+        run: npm install --global npm@11.5.1
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve release tag
+        id: release
+        run: |
+          git fetch --force --tags origin
+          node scripts/release-metadata.mjs resolve-release
+
+      - name: Skip non-release commit
+        if: steps.release.outputs.should_publish != 'true'
+        run: echo "Skipping npm publish because this checkout is not the tagged release commit."
+
+      - name: Release checks
+        if: steps.release.outputs.should_publish == 'true'
+        run: npm run release:check
+
+      - name: Publish package to npm
+        if: steps.release.outputs.should_publish == 'true'
+        run: npm run publish:npm
+
+      - name: Create GitHub Release
+        if: steps.release.outputs.should_publish == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release.outputs.tag }}
+          generate_release_notes: true
