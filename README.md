@@ -80,6 +80,12 @@ await qredex.orders.recordPaidOrder(request);
 await qredex.refunds.recordRefund(request);
 ```
 
+`Qredex.bootstrap()` loads `QREDEX_CLIENT_ID`, `QREDEX_CLIENT_SECRET`, optional `QREDEX_SCOPE`, and optional `QREDEX_ENVIRONMENT`, then configures automatic auth for the Integrations API.
+
+`qredex.orders.list()` and `qredex.orders.getDetails()` retrieve order attribution records. `qredex.orders.recordPaidOrder()` and `qredex.refunds.recordRefund()` ingest paid-order and refund events into Qredex.
+
+Use IIT issuance only where backend issuance is appropriate. Use PIT locking for authenticated machine flows when that is the canonical path.
+
 ## Resource Capability Table
 
 | Resource | Methods | Typical scopes |
