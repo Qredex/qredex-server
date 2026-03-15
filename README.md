@@ -17,12 +17,15 @@ npm install qredex
 
 ## Quick Start
 
-Set:
+Set these environment variables:
 
 - `QREDEX_CLIENT_ID`
 - `QREDEX_CLIENT_SECRET`
-- `QREDEX_SCOPE` optional
-- `QREDEX_ENVIRONMENT` optional, defaults to `production`
+
+Optional environment configuration:
+
+- `QREDEX_SCOPE`
+- `QREDEX_ENVIRONMENT` defaults to `production`
 
 Then use the SDK:
 
