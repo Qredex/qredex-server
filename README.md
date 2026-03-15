@@ -25,7 +25,7 @@ npm install @qredex/sdk
 ```ts
 import { QredexClient } from "@qredex/sdk";
 
-const client = new QredexClient({
+const client = QredexClient.init({
   baseUrl: process.env.QREDEX_BASE_URL!,
   auth: {
     clientId: process.env.QREDEX_CLIENT_ID!,
@@ -49,7 +49,7 @@ const link = await client.links.create({
 ## Public API
 
 ```ts
-const client = new QredexClient({ baseUrl, auth });
+const client = QredexClient.init({ baseUrl, auth });
 
 await client.auth.issueToken();
 
@@ -82,7 +82,7 @@ await client.refunds.recordRefund(request);
 Normal usage is automatic:
 
 ```ts
-const client = new QredexClient({
+const client = QredexClient.init({
   baseUrl,
   auth: {
     clientId,
