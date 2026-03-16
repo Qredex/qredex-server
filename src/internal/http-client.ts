@@ -25,7 +25,7 @@ import { ValidationError } from "../errors";
 import type { QredexCallOptions, QredexLogger, QredexRetryPolicy } from "../types";
 import { Transport, type TransportRequest } from "./transport";
 import type { TokenProvider } from "./token-provider";
-import { clampRetryPolicy, isRetryableStatus, sleep } from "./utils";
+import { clampRetryPolicy, computeRetryDelayMs, isRetryableStatus, sleep } from "./utils";
 import { QredexEventBus } from "./event-bus";
 
 export class HttpClient {
@@ -65,11 +65,12 @@ export class HttpClient {
           throw error;
         }
 
-        const delayMs = Math.min(
-          retry.maxDelayMs,
-          retry.baseDelayMs * 2 ** Math.max(0, attempt - 1),
-        );
-        await this.eventBus.emit({
+        const retryAfterSeconds =
+          error instanceof Error && "retryAfterSeconds" in error
+            ? (error as { retryAfterSeconds?: number }).retryAfterSeconds
+            : undefined;
+        const delayMs = computeRetryDelayMs(attempt, retry, retryAfterSeconds);
+        this.eventBus.emit({
           type: "retry_scheduled",
           attempt,
           delayMs,
@@ -99,7 +100,7 @@ export class HttpClient {
       message: error.message,
       operation,
     });
-    await this.eventBus.emit({
+    this.eventBus.emit({
       type: "validation_failed",
       errorCode: error.errorCode,
       message: error.message,

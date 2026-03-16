@@ -60,7 +60,7 @@ export class QredexEventBus implements QredexEventSubscriber {
     };
   }
 
-  async emit(event: QredexEvent): Promise<void> {
+  emit(event: QredexEvent): void {
     for (const hook of this.hooks) {
       void this.invoke(hook, event);
     }
@@ -72,6 +72,13 @@ export class QredexEventBus implements QredexEventSubscriber {
     for (const handler of this.handlersByType.get(event.type) ?? []) {
       void this.invoke(handler, event);
     }
+  }
+
+  /** Removes all registered handlers and hooks. */
+  destroy(): void {
+    this.allHandlers.clear();
+    this.handlersByType.clear();
+    this.hooks.length = 0;
   }
 
   private async invoke(

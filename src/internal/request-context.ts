@@ -25,6 +25,7 @@ import type { QredexCallOptions, QredexClock } from "../types";
 
 export interface RequestContext {
   headers: Record<string, string>;
+  idempotencyKey?: string;
   requestId?: string;
   signal?: AbortSignal;
   startedAtMs: number;
@@ -39,6 +40,7 @@ export function buildRequestContext(
 ): RequestContext {
   return {
     headers: { ...(callOptions?.headers ?? {}) },
+    idempotencyKey: callOptions?.idempotencyKey,
     requestId: callOptions?.requestId,
     signal: callOptions?.signal,
     startedAtMs: clock.now(),

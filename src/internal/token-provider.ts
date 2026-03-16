@@ -134,7 +134,7 @@ class ClientCredentialsTokenProvider implements TokenProvider {
   ): Promise<string> {
     const cachedToken = await this.tokenCache.get();
     if (cachedToken && cachedToken.expiresAtMs - this.refreshWindowMs > this.clock.now()) {
-      await this.eventBus.emit({
+      this.eventBus.emit({
         type: "auth_cache_hit",
         expiresAt: toIsoDate(cachedToken.expiresAtMs),
         scope: cachedToken.scope,
@@ -142,7 +142,7 @@ class ClientCredentialsTokenProvider implements TokenProvider {
       return `${cachedToken.tokenType} ${cachedToken.accessToken}`;
     }
 
-    await this.eventBus.emit({
+    this.eventBus.emit({
       type: "auth_cache_miss",
       scope: normalizeScope(this.auth.scope),
     });
@@ -228,7 +228,7 @@ class ClientCredentialsTokenProvider implements TokenProvider {
           scope: event.scope,
           tokenType: event.tokenType,
         });
-        await this.eventBus.emit(event);
+        this.eventBus.emit(event);
         await this.auth.onTokenIssued?.({
           token_type: cachedToken.tokenType,
           expires_in: response.expires_in,
@@ -243,8 +243,12 @@ class ClientCredentialsTokenProvider implements TokenProvider {
           throw error;
         }
 
-        const delayMs = computeRetryDelayMs(attempt, retry);
-        await this.eventBus.emit({
+        const retryAfterSeconds =
+          error instanceof QredexError && "retryAfterSeconds" in error
+            ? (error as { retryAfterSeconds?: number }).retryAfterSeconds
+            : undefined;
+        const delayMs = computeRetryDelayMs(attempt, retry, retryAfterSeconds);
+        this.eventBus.emit({
           type: "retry_scheduled",
           attempt,
           delayMs,

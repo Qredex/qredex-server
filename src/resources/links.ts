@@ -77,7 +77,7 @@ export class LinksClient {
     }
     return this.http.request<LinkResponse>({
       method: "GET",
-      path: `/api/v1/integrations/links/${request.link_id}`,
+      path: `/api/v1/integrations/links/${encodeURIComponent(request.link_id)}`,
       callOptions: options,
     });
   }

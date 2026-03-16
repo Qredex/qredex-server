@@ -79,7 +79,7 @@ export class CreatorsClient {
     }
     return this.http.request<CreatorResponse>({
       method: "GET",
-      path: `/api/v1/integrations/creators/${request.creator_id}`,
+      path: `/api/v1/integrations/creators/${encodeURIComponent(request.creator_id)}`,
       callOptions: options,
     });
   }

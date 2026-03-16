@@ -56,6 +56,7 @@ const RESERVED_HEADER_NAMES = new Set([
   "accept",
   "authorization",
   "content-type",
+  "idempotency-key",
   "user-agent",
   QredexHeader.REQUEST_ID,
   QredexHeader.TRACE_ID,
@@ -208,6 +209,10 @@ function assertNoReservedHeaders(
 
     if (normalized === QredexHeader.TRACE_ID) {
       errorFactory(`${location} cannot override '${QredexHeader.TRACE_ID}'. Use traceId instead.`);
+    }
+
+    if (normalized === "idempotency-key") {
+      errorFactory(`${location} cannot override 'idempotency-key'. Use idempotencyKey instead.`);
     }
 
     if (normalized === "user-agent") {

@@ -40,6 +40,11 @@ import {
   pickFirstHeader,
 } from "./utils";
 
+declare const __SDK_VERSION__: string;
+
+const SDK_VERSION: string =
+  typeof __SDK_VERSION__ !== "undefined" ? __SDK_VERSION__ : "0.0.0-dev";
+
 const DEFAULT_STATUS_MESSAGES: Record<number, string> = {
   400: "Bad Request",
   401: "Unauthorized",
@@ -93,8 +98,8 @@ export class Transport {
     this.logger = options.logger;
     this.defaultHeaders = options.defaultHeaders ?? {};
     this.userAgent = options.userAgentSuffix
-      ? `@qredex/server ${options.userAgentSuffix}`.trim()
-      : "@qredex/server";
+      ? `@qredex/server/${SDK_VERSION} ${options.userAgentSuffix}`.trim()
+      : `@qredex/server/${SDK_VERSION}`;
   }
 
   async request<T>(request: TransportRequest): Promise<T> {
@@ -118,6 +123,10 @@ export class Transport {
 
     if (context.traceId) {
       headers.set(QredexHeader.TRACE_ID, context.traceId);
+    }
+
+    if (context.idempotencyKey) {
+      headers.set("idempotency-key", context.idempotencyKey);
     }
 
     for (const [key, value] of Object.entries(context.headers)) {
@@ -156,7 +165,7 @@ export class Transport {
       }
     }
 
-    await this.eventBus.emit({
+    this.eventBus.emit({
       type: "request",
       method: request.method,
       path: request.path,
@@ -210,7 +219,7 @@ export class Transport {
           status: response.status,
           traceId,
         });
-        await this.eventBus.emit({
+        this.eventBus.emit({
           type: "response_error",
           durationMs,
           errorCode,
@@ -247,7 +256,7 @@ export class Transport {
         status: response.status,
         traceId,
       });
-      await this.eventBus.emit({
+      this.eventBus.emit({
         type: "response",
         durationMs,
         method: request.method,
@@ -278,7 +287,7 @@ export class Transport {
         method: request.method,
         path: request.path,
       });
-      await this.eventBus.emit({
+      this.eventBus.emit({
         type: "network_error",
         message,
         method: request.method,

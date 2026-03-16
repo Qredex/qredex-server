@@ -171,5 +171,19 @@ export class Qredex {
     this.intents = new IntentsClient(http);
     this.orders = new OrdersClient(http);
     this.refunds = new RefundsClient(http);
+    this._eventBus = eventBus;
+    this._tokenProvider = tokenProvider;
+  }
+
+  private readonly _eventBus: QredexEventBus;
+  private readonly _tokenProvider: TokenProvider;
+
+  /**
+   * Releases all internal resources: clears event handlers, hooks, and token cache.
+   * After calling destroy(), this client instance must not be reused.
+   */
+  async destroy(): Promise<void> {
+    this._eventBus.destroy();
+    await this._tokenProvider.clearTokenCache();
   }
 }

@@ -2,9 +2,16 @@
 
 ## Unreleased
 
-- remove `onDebug` from the public SDK surface and keep `onEvent` as the single observability hook
-- replace the deprecated JavaScript GitHub Release action with a GitHub CLI release step
-- add a shared-client example and production-default guidance for backend services
+- SDK version now included in `User-Agent` header (`@qredex/server/x.y.z`) for platform-side triage
+- `NotFoundError` (404) added to the typed error hierarchy with `isNotFoundError` guard
+- `destroy()` method on `Qredex` client for deterministic cleanup of event handlers and token cache
+- `idempotencyKey` option on `QredexCallOptions` for safe write replay via `Idempotency-Key` header
+- retry logic now respects `retry-after` header from the server when available
+- retry delays include ±25% jitter to prevent thundering herd on concurrent 429/5xx recovery
+- event bus `emit()` is now synchronous fire-and-forget (was `async` returning an unawaited `Promise`)
+- path parameters consistently URI-encoded across all resource clients
+- coverage thresholds enforced (85% lines/stmts/functions, 80% branches)
+- dead types removed: `ListScopesRequest`, `OrderIngestionDecision`
 
 ## 0.1.2
 

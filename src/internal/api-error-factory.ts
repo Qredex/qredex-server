@@ -26,6 +26,7 @@ import {
   AuthenticationError,
   AuthorizationError,
   ConflictError,
+  NotFoundError,
   RateLimitError,
   ValidationError,
 } from "../errors";
@@ -61,6 +62,10 @@ export function createApiError(input: ApiErrorFactoryInput): ApiError {
 
   if (input.status === 403) {
     return new AuthorizationError(input.message, details);
+  }
+
+  if (input.status === 404) {
+    return new NotFoundError(input.message, details);
   }
 
   if (input.status === 409) {

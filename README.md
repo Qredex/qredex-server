@@ -126,6 +126,32 @@ For most backend services, keep the SDK setup simple:
 - pass store IDs, external order IDs, and refund IDs explicitly per request
 - use `onEvent` or `qredex.events` for sanitized observability
 
+## Idempotency
+
+Pass an idempotency key on write operations for safe replay:
+
+```ts
+await qredex.orders.recordPaidOrder(request, {
+  idempotencyKey: "order-100045-v1",
+});
+```
+
+The SDK sends this as the `Idempotency-Key` header. Use deterministic keys derived from your external identifiers.
+
+## Lifecycle
+
+If your application creates and discards clients (e.g., per-request in tests or hot-reload), call `destroy()` to release event handlers and clear the token cache:
+
+```ts
+const qredex = Qredex.bootstrap();
+
+// ... use the client ...
+
+await qredex.destroy();
+```
+
+For long-lived server processes with a single shared client, `destroy()` is not needed.
+
 ## Auth And Observability
 
 Normal auth is automatic. If you want to observe or preflight token issuance explicitly, do it on the same `qredex` instance:
@@ -192,6 +218,8 @@ For advanced integrations, the SDK also exports:
 - auth token issuance retries internally
 - read retries are opt-in and apply only to `GET` and `HEAD`
 - writes are not retried automatically
+- retry delays use exponential backoff with ±25% jitter to avoid thundering herd
+- when the server sends a `retry-after` header, the SDK respects it
 - use stable external IDs for order/refund replays instead of adding write retries blindly
 
 ```ts
@@ -214,6 +242,7 @@ import {
   Qredex,
   QredexErrorCode,
   isConflictError,
+  isNotFoundError,
   isValidationError,
 } from "@qredex/server";
 
@@ -224,6 +253,10 @@ try {
 } catch (error) {
   if (isValidationError(error)) {
     console.error(error.errorCode, error.requestId);
+  }
+
+  if (isNotFoundError(error)) {
+    console.error("Resource not found:", error.message);
   }
 
   if (isConflictError(error)) {

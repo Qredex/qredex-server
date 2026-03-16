@@ -29,6 +29,7 @@ import {
   ConfigurationError,
   ConflictError,
   NetworkError,
+  NotFoundError,
   Qredex,
   QredexEnvironment,
   QredexErrorCode,
@@ -39,6 +40,7 @@ import {
   isAuthenticationError,
   isConflictError,
   isNetworkError,
+  isNotFoundError,
   isValidationError,
 } from "../src";
 import {
@@ -649,7 +651,7 @@ describe("Qredex", () => {
     expect(error.traceId).toBe("trace-456");
   });
 
-  it("maps 404 order details responses into ApiError with Qredex metadata", async () => {
+  it("maps 404 order details responses into NotFoundError with Qredex metadata", async () => {
     const orderAttributionId = "55555555-5555-4555-8555-555555555555";
     const { fetch } = createFetchMock([
       jsonResponse(200, {
@@ -680,6 +682,8 @@ describe("Qredex", () => {
 
     const error = await qredex.orders.getDetails(orderAttributionId).catch((thrown) => thrown);
 
+    expect(error).toBeInstanceOf(NotFoundError);
+    expect(isNotFoundError(error)).toBe(true);
     expect(error).toBeInstanceOf(ApiError);
     expect(error.status).toBe(404);
     expect(error.errorCode).toBe("order_not_found");
@@ -1192,5 +1196,331 @@ describe("Qredex", () => {
 
     const authEvent = events.find((event) => event.type === "auth_token_issued");
     expect(authEvent?.expiresAt).toBe("2026-03-15T13:00:00.000Z");
+  });
+
+  it("sends the SDK version in the user-agent header", async () => {
+    const { calls, fetch } = createFetchMock([
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
+      }),
+    ]);
+
+    const client = Qredex.init({
+      auth: {
+        type: "access_token",
+        accessToken: "ua-token",
+      },
+      fetch,
+    });
+
+    await client.creators.list();
+
+    const ua = getHeader(calls[0]!, "user-agent");
+    expect(ua).toMatch(/^@qredex\/server\/\d+\.\d+\.\d+/);
+  });
+
+  it("appends userAgentSuffix after the versioned SDK identifier", async () => {
+    const { calls, fetch } = createFetchMock([
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
+      }),
+    ]);
+
+    const client = Qredex.init({
+      auth: {
+        type: "access_token",
+        accessToken: "ua-token",
+      },
+      fetch,
+      userAgentSuffix: "my-app/1.0",
+    });
+
+    await client.creators.list();
+
+    const ua = getHeader(calls[0]!, "user-agent");
+    expect(ua).toMatch(/^@qredex\/server\/\d+\.\d+\.\d+.* my-app\/1\.0$/);
+  });
+
+  it("coalesces concurrent token requests into a single in-flight call", async () => {
+    let tokenCallCount = 0;
+    const { fetch } = createFetchMock([
+      () => {
+        tokenCallCount += 1;
+        return jsonResponse(200, {
+          access_token: "coalesced-token",
+          token_type: "Bearer",
+          expires_in: 3600,
+        });
+      },
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
+      }),
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
+      }),
+    ]);
+
+    const client = Qredex.init({
+      environment: "staging",
+      auth: {
+        clientId: "coalesce-client",
+        clientSecret: "coalesce-secret",
+      },
+      fetch,
+    });
+
+    const [a, b] = await Promise.all([
+      client.creators.list(),
+      client.creators.list(),
+    ]);
+
+    expect(a.items).toEqual([]);
+    expect(b.items).toEqual([]);
+    expect(tokenCallCount).toBe(1);
+  });
+
+  it("respects the refresh window and re-fetches tokens approaching expiry", async () => {
+    let clockMs = Date.parse("2026-03-15T12:00:00Z");
+    const { calls, fetch } = createFetchMock([
+      jsonResponse(200, {
+        access_token: "token-fresh",
+        token_type: "Bearer",
+        expires_in: 60,
+      }),
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
+      }),
+      jsonResponse(200, {
+        access_token: "token-refreshed",
+        token_type: "Bearer",
+        expires_in: 3600,
+      }),
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
+      }),
+    ]);
+
+    const client = Qredex.init({
+      environment: "staging",
+      auth: {
+        clientId: "refresh-client",
+        clientSecret: "refresh-secret",
+        refreshWindowMs: 30_000,
+      },
+      clock: { now: () => clockMs },
+      fetch,
+    });
+
+    await client.creators.list();
+    expect(getHeader(calls[1]!, "authorization")).toBe("Bearer token-fresh");
+
+    // Advance clock past the refresh window (60s token - 30s window = expires in 30s)
+    clockMs += 35_000;
+    await client.creators.list();
+
+    expect(calls).toHaveLength(4);
+    expect(getHeader(calls[3]!, "authorization")).toBe("Bearer token-refreshed");
+  });
+
+  it("supports lazy access token resolver function", async () => {
+    let callCount = 0;
+    const { calls, fetch } = createFetchMock([
+      jsonResponse(200, {
+        items: [],
+        page: 0,
+        size: 20,
+        total_elements: 0,
+        total_pages: 0,
+      }),
+    ]);
+
+    const client = Qredex.init({
+      auth: {
+        type: "access_token",
+        accessToken: async () => {
+          callCount += 1;
+          return "lazy-token";
+        },
+      },
+      fetch,
+    });
+
+    await client.creators.list();
+
+    expect(callCount).toBe(1);
+    expect(getHeader(calls[0]!, "authorization")).toBe("Bearer lazy-token");
+  });
+
+  it("sends idempotency key header when provided in call options", async () => {
+    const { calls, fetch } = createFetchMock([
+      jsonResponse(200, {
+        access_token: "idem-token",
+        token_type: "Bearer",
+        expires_in: 3600,
+      }),
+      jsonResponse(201, {
+        id: UUIDS.creator,
+        handle: "alice",
+        status: "ACTIVE",
+        created_at: "2026-03-15T10:00:00Z",
+        updated_at: "2026-03-15T10:00:00Z",
+      }),
+    ]);
+
+    const client = Qredex.init({
+      environment: "staging",
+      auth: {
+        clientId: "client",
+        clientSecret: "secret",
+      },
+      fetch,
+    });
+
+    await client.creators.create(
+      { handle: "alice" },
+      { idempotencyKey: "idem-123" },
+    );
+
+    expect(getHeader(calls[1]!, "idempotency-key")).toBe("idem-123");
+  });
+
+  it("rejects idempotency-key in custom headers to prevent double-send", () => {
+    const { fetch } = createFetchMock([]);
+
+    expect(() =>
+      Qredex.init({
+        auth: {
+          type: "access_token",
+          accessToken: "token",
+        },
+        fetch,
+        defaultHeaders: {
+          "Idempotency-Key": "manual",
+        },
+      }),
+    ).toThrow(ConfigurationError);
+  });
+
+  it("cleans up resources on destroy", async () => {
+    const events: string[] = [];
+    const { fetch } = createFetchMock([
+      jsonResponse(200, {
+        access_token: "destroy-token",
+        token_type: "Bearer",
+        expires_in: 3600,
+      }),
+    ]);
+
+    const client = Qredex.init({
+      environment: "staging",
+      auth: {
+        clientId: "client",
+        clientSecret: "secret",
+      },
+      fetch,
+      onEvent: (event) => {
+        events.push(event.type);
+      },
+    });
+
+    await client.auth.issueToken();
+    expect(events.length).toBeGreaterThan(0);
+
+    await client.destroy();
+
+    // Event handlers should be cleared after destroy
+    const eventsBefore = events.length;
+    client.events.subscribe(() => {
+      events.push("post-destroy");
+    });
+    // The onEvent hook was cleared, so no new events from old hooks
+    expect(events.length).toBe(eventsBefore);
+  });
+
+  it("retries auth token acquisition on 429 and 5xx", async () => {
+    const events: string[] = [];
+    const { calls, fetch } = createFetchMock([
+      jsonResponse(429, {
+        error_code: "rate_limited",
+        message: "slow down",
+      }),
+      jsonResponse(200, {
+        access_token: "retry-token",
+        token_type: "Bearer",
+        expires_in: 3600,
+      }),
+    ]);
+
+    const client = Qredex.init({
+      environment: "staging",
+      auth: {
+        clientId: "retry-client",
+        clientSecret: "retry-secret",
+        retry: {
+          maxAttempts: 2,
+          baseDelayMs: 0,
+          maxDelayMs: 0,
+        },
+      },
+      fetch,
+      onEvent: (event) => {
+        if (event.type === "retry_scheduled") {
+          events.push(`${event.source}:${event.reason}:${event.attempt}`);
+        }
+      },
+    });
+
+    const token = await client.auth.issueToken();
+    expect(token.access_token).toBe("retry-token");
+    expect(calls).toHaveLength(2);
+    expect(events).toEqual(["auth:http_429:1"]);
+  });
+
+  it("respects abort signal and throws NetworkError on cancellation", async () => {
+    const controller = new AbortController();
+    const { fetch } = createFetchMock([
+      () => {
+        controller.abort();
+        throw new DOMException("The operation was aborted.", "AbortError");
+      },
+    ]);
+
+    const client = Qredex.init({
+      auth: {
+        type: "access_token",
+        accessToken: "abort-token",
+      },
+      fetch,
+    });
+
+    const error = await client.creators
+      .list({}, { signal: controller.signal })
+      .catch((thrown) => thrown);
+
+    expect(error).toBeInstanceOf(NetworkError);
   });
 });

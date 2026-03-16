@@ -21,7 +21,10 @@
  *  If you need additional information or have any questions, please email: copyright@qredex.com
  */
 
+import { readFileSync } from "node:fs";
 import { defineConfig } from "tsup";
+
+const { version } = JSON.parse(readFileSync("./package.json", "utf8"));
 
 export default defineConfig({
   entry: ["src/index.ts"],
@@ -31,4 +34,7 @@ export default defineConfig({
   clean: true,
   target: "node18",
   treeshake: true,
+  define: {
+    __SDK_VERSION__: JSON.stringify(version),
+  },
 });

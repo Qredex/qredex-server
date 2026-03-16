@@ -108,9 +108,16 @@ export function isRetryableStatus(status?: number): boolean {
 export function computeRetryDelayMs(
   attempt: number,
   retry: Required<QredexRetryPolicy>,
+  retryAfterSeconds?: number,
 ): number {
+  if (retryAfterSeconds !== undefined && retryAfterSeconds > 0) {
+    return Math.min(retryAfterSeconds * 1_000, retry.maxDelayMs);
+  }
+
   const exponentialDelay = retry.baseDelayMs * 2 ** Math.max(0, attempt - 1);
-  return Math.min(exponentialDelay, retry.maxDelayMs);
+  const clamped = Math.min(exponentialDelay, retry.maxDelayMs);
+  const jitter = clamped * (0.75 + Math.random() * 0.5);
+  return Math.round(jitter);
 }
 
 export function sleep(ms: number): Promise<void> {

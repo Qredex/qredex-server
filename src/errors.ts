@@ -70,6 +70,9 @@ export class AuthorizationError extends ApiError {}
 /** SDK or API validation failure for invalid request input. */
 export class ValidationError extends ApiError {}
 
+/** API response indicating the requested resource was not found. */
+export class NotFoundError extends ApiError {}
+
 /** API conflict or policy rejection, such as duplicate or cross-source conflicts. */
 export class ConflictError extends ApiError {}
 
@@ -112,6 +115,11 @@ export function isAuthorizationError(error: unknown): error is AuthorizationErro
 /** Type guard for validation failures. */
 export function isValidationError(error: unknown): error is ValidationError {
   return error instanceof ValidationError;
+}
+
+/** Type guard for not-found failures. */
+export function isNotFoundError(error: unknown): error is NotFoundError {
+  return error instanceof NotFoundError;
 }
 
 /** Type guard for conflict or policy rejection failures. */

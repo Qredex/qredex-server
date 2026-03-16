@@ -10,6 +10,8 @@
   Returned for `403` responses when the client lacks the required direct scope.
 - `ValidationError`
   Returned for `400` request validation failures.
+- `NotFoundError`
+  Returned for `404` responses when the requested resource does not exist.
 - `ConflictError`
   Returned for `409` policy/conflict outcomes such as cross-source duplicate rejection.
 - `RateLimitError`
@@ -65,6 +67,7 @@ The SDK also exports:
 - `isAuthenticationError`
 - `isAuthorizationError`
 - `isValidationError`
+- `isNotFoundError`
 - `isConflictError`
 - `isRateLimitError`
 - `isNetworkError`

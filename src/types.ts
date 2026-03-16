@@ -199,12 +199,14 @@ export type QredexAuthOptions =
 /**
  * Per-request overrides for timeout, cancellation, correlation IDs, and custom headers.
  * Use `requestId` and `traceId` instead of raw correlation headers.
+ * Use `idempotencyKey` for safe write replay.
  */
 export interface QredexCallOptions {
   signal?: AbortSignal;
   timeoutMs?: number;
   requestId?: string;
   traceId?: string;
+  idempotencyKey?: string;
   headers?: Record<string, string>;
 }
 
