@@ -7,6 +7,23 @@ avoid drift, regressions, and "helpful but wrong" changes. It serves as a compre
 
 This version is adapted for the `@qredex/server` repository. Keep the broad Qredex engineering standards, but do not carry over browser-agent-specific rules that do not apply to a pure Node.js server SDK.
 
+## SDK Design Standards
+
+Engineer this like a serious public infrastructure SDK.
+
+**Standards:**
+- Optimize for developer trust, safety, and long-term maintainability.
+- Prefer fewer, stronger primitives over wide surface area.
+- Make the SDK easy to use correctly and hard to misuse.
+- Hide raw HTTP/auth/plumbing where appropriate, but never hide important behavior.
+- Keep the public API small, explicit, typed, and predictable.
+- Favor clean names, immutable value objects, stable contracts, and framework-neutral design.
+- Prevent footguns: safe defaults, explicit config, clear errors, deterministic behavior, idempotency support, timeout/retry discipline, and no leaky internals.
+- Do more with less: remove anything redundant, speculative, or low-value.
+- Treat DX as part of the product: short happy path, strong docs, clean examples, good package metadata, and professional release/testing standards.
+- If a design choice improves durability, readability, and correct usage, prefer it over cleverness or abstraction for its own sake.
+- Build this to feel like a platform-grade SDK a company would trust in production.
+
 ## System Overview
 
 Qredex is a source-agnostic attribution and integrity system for modern commerce that verifies and records purchase influence while detecting attribution corruption.
