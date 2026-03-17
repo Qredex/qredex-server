@@ -19,4 +19,4 @@ Project maintainers may remove comments, issues, pull requests, or participants 
 
 For conduct concerns, contact:
 
-- `community@qredex.com`
+- `os@qredex.com`
