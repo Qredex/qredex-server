@@ -314,3 +314,10 @@ Start from [`.env.live.example`](./.env.live.example) when wiring live test cred
 ## License
 
 [Apache-2.0](./LICENSE)
+
+## Qredex Contact
+
+- Website: [https://qredex.com](https://qredex.com)
+- X: [https://x.com/qredex](https://x.com/qredex)
+- Email: os@qredex.com
+

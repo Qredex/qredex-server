@@ -309,11 +309,124 @@ If a solution feels hacky, reconsider before proceeding.
 - Do not add a second long-term publish path
 - GitHub Release should happen only after npm publish succeeds
 
+### Release Process
+
+When preparing a release or making release-related documentation updates:
+
+1. **Read the release guide first** - Start with [`docs/RELEASING.md`](docs/RELEASING.md)
+2. **Follow the documented process exactly** - Do not invent a new release process
+3. **Review git history** - Before writing or updating release notes or changelog entries
+4. **Ensure `CHANGELOG.md` exists** - Create it if missing
+5. **Ground all entries in reality** - All changelog entries must be based on actual repository history and real implemented changes
+6. **Do not invent versions, dates, entries, or release notes**
+
+### Local Release Commands
+
+The standard local release workflow:
+
+1. **Bump the package version:**
+   ```bash
+   npm run release:version -- 1.1.0
+   ```
+
+2. **Update [`CHANGELOG.md`](CHANGELOG.md)** with actual changes from git history
+
+3. **Run local verification:**
+   ```bash
+   npm test
+   npm run build
+   npm run release:check
+   npm run smoke:package
+   ```
+
+4. **Run the live integration suite against staging** (when credentials are available):
+   - Start from [`.env.live.example`](.env.live.example)
+   - Set `QREDEX_LIVE_ENABLED=1`
+   - Set `QREDEX_LIVE_ENVIRONMENT=staging`
+   - Set `QREDEX_LIVE_CLIENT_ID=...`
+   - Set `QREDEX_LIVE_CLIENT_SECRET=...`
+   - Set `QREDEX_LIVE_STORE_ID=...`
+   - Run `npm run test:live`
+
+5. **Inspect the publish tarball:**
+   ```bash
+   npm pack --dry-run
+   ```
+
+6. **Commit and merge the version bump to `main`**
+
+### Automated GitHub Flow
+
+The steady-state release model uses GitHub Trusted Publishing for `@qredex/server`:
+
+When a version bump lands on `main`:
+
+1. **[`tag-release-on-version-change.yml`](.github/workflows/tag-release-on-version-change.yml)**
+   - Verifies `package.json` and `package-lock.json` versions match
+   - Reads the package version
+   - Creates `vX.Y.Z` tag if it does not already exist
+
+2. **[`publish-npm.yml`](.github/workflows/publish-npm.yml)**
+   - Runs from the tag workflow completion
+   - Supports direct pushed tags as a recovery path
+   - Supports manual `workflow_dispatch`
+   - Verifies the checked-out commit is the tagged release commit
+   - Runs `npm run release:check`
+   - Publishes with npm Trusted Publishing
+   - Creates the GitHub Release with generated notes through the GitHub CLI
+
+The publish workflow is rerunnable. If the version is already published on npm, it skips the npm publish step safely instead of failing the run.
+
+### Trusted Publishing Setup
+
+`@qredex/server` uses npm Trusted Publishing. Do not configure `NPM_TOKEN` for this release flow.
+
+Configure npm once for the package:
+
+1. Open the npm package settings for `@qredex/server`
+2. Add a Trusted Publisher for this GitHub repository:
+   - repository: `Qredex/qredex-server`
+   - workflow file: `.github/workflows/publish-npm.yml`
+   - branch: `main`
+3. Ensure GitHub Actions is enabled for the repository
+
+### Manual Recovery Flow
+
+If the tag exists but the publish workflow needs to be rerun:
+
+1. Open the `Publish package to npm` workflow in GitHub Actions
+2. Run it manually with `release_ref` set to:
+   - the release tag (e.g., `v1.1.0`), or
+   - the tagged release commit SHA
+
+The workflow will:
+- Fetch tags
+- Verify that the checked-out commit matches the release tag for the current package version
+- Skip cleanly if the commit is not the tagged release commit
+- Skip cleanly if `@qredex/server@<version>` is already published
+
+### Release Notes
+
+- `npm run release:check` is the pre-publish verification path used by automation and includes the package smoke check
+- `npm test` and `npm run release:check` intentionally exclude the live integration suite
+- `npm run publish:npm` is only for the GitHub Actions release workflow
+- `prepublishOnly` still runs `npm run release:check` as a local safety net
+
 ## Documentation Rules
 
 **Update when:** adding new public APIs, changing config/bootstrap behavior, changing release behavior, changing supported environments, or changing the canonical user path.
 
 **Code comments:** Comment **why**, not **what**. Remove commented-out code. Keep JSDoc for public APIs where useful.
+
+### README Contact Section
+
+Ensure the bottom of `README.md` contains a `Qredex Contact` section with exactly:
+
+- **Website:** `https://qredex.com`
+- **X:** `https://x.com/qredex`
+- **Email:** `os@qredex.com`
+
+Do not omit any of these contact points.
 
 ## Definition of Done (Mandatory)
 
