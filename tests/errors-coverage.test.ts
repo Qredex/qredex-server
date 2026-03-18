@@ -705,11 +705,11 @@ describe("HTTP client edge cases", () => {
       auth: {
         clientId: "client",
         clientSecret: "secret",
-        readRetry: {
-          maxAttempts: 3,
-          baseDelayMs: 100,
-          maxDelayMs: 1000,
-        },
+      },
+      readRetry: {
+        maxAttempts: 3,
+        baseDelayMs: 100,
+        maxDelayMs: 1000,
       },
       fetch,
     });
@@ -1010,7 +1010,11 @@ describe("Event bus edge cases", () => {
     await client.destroy();
 
     // After destroy, event bus should be cleared
-    client.events.emit({ type: "response", durationMs: 10, method: "GET", path: "/test", status: 200 });
+    (
+      client.events as unknown as {
+        emit(event: { type: "response"; durationMs: number; method: string; path: string; status: number }): void;
+      }
+    ).emit({ type: "response", durationMs: 10, method: "GET", path: "/test", status: 200 });
     expect(eventHandler).not.toHaveBeenCalled();
   });
 });
