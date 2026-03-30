@@ -1,0 +1,164 @@
+version: 1
+project:
+  name: '@qredex/server'
+  description: Canonical Node.js server SDK for Qredex Integrations API
+  type: library
+metadata:
+  team: sdk
+  owner: qredex
+  repo_class: node-sdk
+execution:
+  preferred: native
+  supported:
+    - native
+tools:
+  npm: '*'
+tasks:
+  setup:
+    description: Install server SDK dependencies
+    notes: |
+      Use this first after cloning or when package metadata changes.
+    category: setup
+    run: npm ci
+    safe_for_agent: true
+  build:
+    description: Build the SDK
+    notes: |
+      Use this to verify the package still compiles before release work.
+    category: build
+    run: npm run build
+    depends_on:
+      - setup
+    safe_for_agent: true
+  clean:
+    description: Remove build artifacts
+    notes: |
+      Use this to clear generated output before a fresh build or release check.
+    category: dev
+    run: npm run clean
+  prepack:
+    description: Prepare the package for packing
+    notes: |
+      Use this before packaging or publishing to verify package contents.
+    category: build
+    run: npm run prepack
+    depends_on:
+      - build
+    safe_for_agent: true
+  prepublishOnly:
+    description: Run the publish gate
+    notes: |
+      Use this as the release gate before publishing the package to npm.
+    category: release
+    run: npm run prepublishOnly
+    depends_on:
+      - release:check
+  publish:npm:
+    description: Publish the package to npm
+    notes: |
+      Use this only when you are ready to release the SDK publicly.
+    category: release
+    run: npm run publish:npm
+    depends_on:
+      - release:check
+  release:check:
+    description: Run the server SDK release verification suite
+    notes: |
+      Use this to validate release readiness, packaging, and test coverage.
+    category: release
+    run: npm run release:check
+    depends_on:
+      - setup
+    safe_for_agent: true
+  release:version:
+    description: Bump the release version
+    notes: |
+      Use this when preparing a new SDK release version.
+    category: release
+    run: npm run release:version
+  smoke:package:
+    description: Smoke-test the packaged artifact
+    notes: |
+      Use this to verify the packed artifact behaves as expected.
+    category: test
+    run: npm run smoke:package
+    depends_on:
+      - build
+    safe_for_agent: true
+  test:
+    description: Run the unit test suite
+    notes: |
+      Use this for the standard server SDK test pass.
+    category: test
+    run: npm run test
+    depends_on:
+      - setup
+    safe_for_agent: true
+  test:live:
+    description: Run the live integration tests
+    notes: |
+      Use this when the live integration environment is available.
+    category: test
+    run: npm run test:live
+    depends_on:
+      - setup
+    safe_for_agent: true
+  typecheck:
+    description: Type-check the SDK
+    notes: |
+      Use this for a quick static verification pass without running tests.
+    category: test
+    run: npm run typecheck
+    depends_on:
+      - setup
+    safe_for_agent: true
+  ci:
+    description: Run the standard SDK verification suite
+    notes: |
+      Use this as the canonical local verification path before merging changes.
+    category: test
+    run: npm run release:check
+    depends_on:
+      - setup
+    safe_for_agent: true
+agent:
+  entrypoint: setup
+  default_task: ci
+  safe_tasks:
+    - setup
+    - build
+    - prepack
+    - release:check
+    - smoke:package
+    - test
+    - test:live
+    - typecheck
+    - ci
+  verify_after_changes:
+    - typecheck
+    - test
+    - release:check
+    - ci
+  writable_paths:
+    - docs
+    - examples
+    - scripts
+    - src
+    - README.md
+    - CONTRIBUTING.md
+    - SECURITY.md
+    - CHANGELOG.md
+  protected_paths:
+    - dist
+    - node_modules
+    - package-lock.json
+  notes: |
+    Use the Ota workflow first for setup, validation, and task execution.
+    Treat Ota as the default workflow, the way npm is the default in Node repos.
+    Use `ota validate` to verify the contract.
+    Use `ota doctor` to inspect readiness and agent guidance.
+    Use `ota tasks` to discover runnable repo actions.
+    Use `ota run setup` to prepare the repo.
+    Use `ota run ci` to run the canonical verification path.
+    This repo is a public SDK, so keep release, packaging, and smoke-test commands explicit.
+    Prefer release:check before publishing or shipping integration changes.
