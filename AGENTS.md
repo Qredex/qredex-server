@@ -7,6 +7,8 @@ avoid drift, regressions, and "helpful but wrong" changes. It serves as a compre
 
 This version is adapted for the `@qredex/server` repository. Keep the broad Qredex engineering standards, but do not carry over browser-agent-specific rules that do not apply to a pure Node.js server SDK.
 
+The authoritative machine-readable agent contract for this repository lives in [`ota.yaml`](ota.yaml). This file is human-facing guidance that must stay aligned with that contract and must not override it.
+
 ## SDK Design Standards
 
 Engineer this like a serious public infrastructure SDK.
@@ -122,6 +124,9 @@ Use plan mode whenever work is more than 3 steps or touches architecture.
 - **Avoid speculative work.** Do not browse adjacent code, run optional checks, or expand scope unless the current task or integration risk requires it.
 - **Compress communication.** Keep responses short, direct, and action-focused so unnecessary conversational token usage does not accumulate.
 - **Escalate only when necessary.** If certainty would require materially more usage, state the trade-off briefly before doing broad exploration or expensive validation.
+- **Tell the user when the task should move to a higher reasoning level** (`high` or `xhigh`) for architecture, wide refactors, or deep review.
+- **If this repo has an `ota` manifest, use `ota validate`, `ota doctor`, `ota tasks`, and `ota run` first; treat `ota` as the canonical task runner.**
+- **If a new repo command is needed, update `ota` so the command becomes discoverable and reusable instead of creating one-off shell instructions.**
 
 ## Change Discipline
 
