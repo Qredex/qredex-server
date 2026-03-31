@@ -13,6 +13,17 @@
 - coverage thresholds enforced (85% lines/stmts/functions, 80% branches)
 - dead types removed: `ListScopesRequest`, `OrderIngestionDecision`
 
+## 0.1.3
+
+Release workflow and OTA contract update for `@qredex/server`.
+
+Includes:
+
+- OTA manifest added with task inputs, agent guidance, and canonical `ota run` release commands
+- release version and release metadata helpers now read explicit OTA environment inputs instead of argv parsing
+- GitHub Actions release workflows updated to pass release helper commands through environment variables
+- release docs and agent guidance updated to use the OTA-first version bump flow
+
 ## 0.1.2
 
 Public SDK hardening release for `@qredex/server`.
