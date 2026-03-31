@@ -24,7 +24,7 @@
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 
-const command = process.argv[2];
+const command = process.env.OTA_INPUT_COMMAND;
 
 function readJson(path) {
   return JSON.parse(fs.readFileSync(path, "utf8"));
@@ -126,8 +126,7 @@ if (command === "verify-version-files") {
 } else if (command === "resolve-release") {
   resolveRelease();
 } else {
-  console.error(
-    "Usage: node scripts/release-metadata.mjs <verify-version-files|resolve-release>",
-  );
+  console.error("Missing OTA_INPUT_COMMAND environment variable.");
+  console.error("Example: OTA_INPUT_COMMAND=resolve-release node scripts/release-metadata.mjs");
   process.exit(1);
 }

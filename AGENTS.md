@@ -331,7 +331,7 @@ The standard local release workflow:
 
 1. **Bump the package version:**
    ```bash
-   npm run release:version -- 1.1.0
+   ota run release:version --version 1.1.0
    ```
 
 2. **Update [`CHANGELOG.md`](CHANGELOG.md)** with actual changes from git history

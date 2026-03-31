@@ -55,9 +55,11 @@ jobs:
 
       - name: Resolve release tag
         id: release
+        env:
+          OTA_INPUT_COMMAND: resolve-release
         run: |
           git fetch --force --tags origin
-          node scripts/release-metadata.mjs resolve-release
+          node scripts/release-metadata.mjs
 
       - name: Skip non-release commit
         if: steps.release.outputs.should_publish != 'true'

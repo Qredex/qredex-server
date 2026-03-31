@@ -23,10 +23,11 @@
 
 import { execFileSync } from "node:child_process";
 
-const version = process.argv[2];
+const version = process.env.OTA_INPUT_VERSION;
 
 if (!version) {
-  console.error("Usage: npm run release:version -- <version>");
+  console.error("Missing OTA_INPUT_VERSION environment variable.");
+  console.error("Example: OTA_INPUT_VERSION=1.1.0 ota run release:version");
   process.exit(1);
 }
 

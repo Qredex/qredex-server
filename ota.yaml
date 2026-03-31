@@ -65,6 +65,9 @@ tasks:
     description: Run the server SDK release verification suite
     notes: |
       Use this to validate release readiness, packaging, and test coverage.
+      Typical flow:
+        ota run release:check
+      This is the gate before publish or tag creation.
     category: release
     run: npm run release:check
     depends_on:
@@ -74,8 +77,16 @@ tasks:
     description: Bump the release version
     notes: |
       Use this when preparing a new SDK release version.
+      The task runner forwards `version` to `OTA_INPUT_VERSION`.
+      Typical flow:
+        ota run release:version --version 1.1.0
+        ota run release:check
     category: release
     run: npm run release:version
+    inputs:
+      version:
+        description: New release version to apply to the package
+        required: true
   smoke:package:
     description: Smoke-test the packaged artifact
     notes: |

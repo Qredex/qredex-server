@@ -36,7 +36,9 @@ jobs:
 
       - name: Verify version files match
         id: version
-        run: node scripts/release-metadata.mjs verify-version-files
+        env:
+          OTA_INPUT_COMMAND: verify-version-files
+        run: node scripts/release-metadata.mjs
 
       - name: Check whether release tag already exists
         id: tag
