@@ -10,7 +10,7 @@ The automated release flow tags and publishes only when those version files are 
 ## Local Release Commands
 
 1. Bump the package version:
-   - `ota run release:version --version 1.1.0`
+   - `ota run release:version --version minor`
 2. Update [`CHANGELOG.md`](../CHANGELOG.md).
 3. Run local verification:
    - `npm run test`

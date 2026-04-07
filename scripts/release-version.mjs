@@ -23,27 +23,27 @@
 
 import { execFileSync } from "node:child_process";
 
-const version = process.env.OTA_INPUT_VERSION;
+const versionInput = process.env.OTA_INPUT_VERSION;
 
-if (!version) {
+if (!versionInput) {
   console.error("Missing OTA_INPUT_VERSION environment variable.");
-  console.error("Example: OTA_INPUT_VERSION=1.1.0 ota run release:version");
+  console.error("Example: OTA_INPUT_VERSION=minor ota run release:version");
   process.exit(1);
 }
 
-if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z-.]+)?$/.test(version)) {
-  console.error(`Invalid semver version: ${version}`);
+if (!/^(major|minor|patch|\d+\.\d+\.\d+(?:-[0-9A-Za-z-.]+)?)$/.test(versionInput)) {
+  console.error(`Invalid version selector or semver: ${versionInput}`);
   process.exit(1);
 }
 
 const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
 
-execFileSync(npmCommand, ["version", version, "--no-git-tag-version"], {
+execFileSync(npmCommand, ["version", versionInput, "--no-git-tag-version"], {
   stdio: "inherit",
 });
 
 console.log("");
-console.log(`Updated package version to ${version}.`);
+console.log(`Updated package version using ${versionInput}.`);
 console.log("Next steps:");
 console.log("1. Update CHANGELOG.md.");
 console.log("2. Commit the version change.");
